@@ -1,0 +1,17 @@
+@import 'reset';
+@import 'mixins';
+
+//vars
+
+//font-face
+
+html {
+	font-size: 62.5%;
+}
+
+body {
+	font-size: 1em;
+	font-family: Roboto, Arial;
+}
+
+@include border-box-default;
