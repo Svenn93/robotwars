@@ -1,19 +1,8 @@
 @import 'base';
 
-html,
-body {
-	height: 100%;
-	width: 100%;
-}
-
-.container {
-	height: 100%;
-	position: relative;
-}
-
-header {
-	position: absolute;
-	top: 20px;
-	left: 20px;
-	font-size: 3em;
+canvas{
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+ 	width: 1200px;
 }
