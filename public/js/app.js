@@ -71,6 +71,7 @@ module.exports = (function(){
 			this.velY = 0;
 			this.friction = friction;
 			this.speed = 3;
+			this.rotation = 0;
 
 			this.displayobject = new createjs.Container();
 			this.displayobject.x = this.x;
@@ -86,16 +87,53 @@ module.exports = (function(){
     		circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
     		this.displayobject.addChild(circle);
 
+    		circle2 = new createjs.Shape();
+    		circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
+    		this.displayobject.addChild(circle2);
+
     		this.displayobject.width = this.width = 15;
     		this.displayobject.height = this.height = 15;
 		},
 
 		update: function() {
-			this.x += this.velX;
-			this.y += this.velY;
+			//this.x += this.velX;
+			//this.y += this.velY;
 
-			this.displayobject.x = this.x;
-			this.displayobject.y = this.y;
+			this.speed *= this.friction;
+			if(this.speed < 0.1)
+			{
+				this.speed = 0;
+			}
+
+			if(this.rotation <= 0 && this.rotation >= -2)
+			{
+				this.rotation = 360;
+			}else if(this.rotation > 360 && this.rotation <= 362){
+				this.rotation = 0;
+			}
+
+			directionVector = [];
+			accelerationVector = [];
+			speedVector = [];
+			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
+			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
+
+			console.log('direction x: ', directionVector["x"]);
+			console.log('direction y: ', directionVector["y"]);
+			console.log('rotation: ', this.rotation);
+
+
+			accelerationVector["x"] = directionVector["x"] * this.speed;
+			accelerationVector["y"] = directionVector["y"] * this.speed;
+
+			//console.log("speed: ", this.speed, "accVector x: ", accelerationVector["x"], "accVector y: ", accelerationVector["y"]);
+
+			this.displayobject.rotation = this.rotation;
+
+			//console.log("heading: ", this.rotation, " and rotation: ", this.displayobject.rotation);
+
+			this.displayobject.x += accelerationVector["x"];
+			this.displayobject.y += accelerationVector["y"];
 
 			this.velX *= this.friction;
 			this.velY *= this.friction;
@@ -112,6 +150,8 @@ var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 
+var keys = [];
+
 module.exports = (function(){
 
 	var RobotWars = Class.extend({
@@ -120,6 +160,7 @@ module.exports = (function(){
 			this.$el = $el;
 			this.collisionboxes = [];
 			this.boxes = [];
+			this.keys = [];
 			this.mapid = 1;
 			this.map;
 			this.ticker;
@@ -155,6 +196,9 @@ module.exports = (function(){
 			this.$el.on('click', function(e){
 				this.requestFullscreen();
 			});
+
+			window.onkeydown = this.keydown;
+			window.onkeyup = this.keyup;
 		},
 
 		initializeMap: function() {
@@ -197,7 +241,23 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			console.log('update');
+			if(keys[37]) {
+				//links
+				this.player.rotation -= 2;
+			}
+
+			if(keys[39]) {
+				this.player.rotation += 2;
+			}
+
+			if(keys[38]) {
+				if(this.player.speed < 3)
+				{
+					this.player.speed ++;
+				}
+			}
+
+			this.player.update();
 			this.stage.update();
 		},
 
@@ -206,6 +266,15 @@ module.exports = (function(){
 			//boxes.push(new Bound(0, 0, world.width, 1));
 			this.collisionboxes.push(new Bound(0, 0, 1, this.world.height));
 			this.collisionboxes.push(new Bound(this.world.width-1, 0, 1, this.world.height));
+		},
+
+		keyup: function(event) {
+			keys[event.keyCode] = false;
+		},
+
+		keydown: function(event) {
+			keys[event.keyCode] = true;
+			console.log(keys[event.keyCode]);
 		},
 	});
 

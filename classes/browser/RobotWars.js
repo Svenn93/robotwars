@@ -4,6 +4,8 @@ var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 
+var keys = [];
+
 module.exports = (function(){
 
 	var RobotWars = Class.extend({
@@ -12,6 +14,7 @@ module.exports = (function(){
 			this.$el = $el;
 			this.collisionboxes = [];
 			this.boxes = [];
+			this.keys = [];
 			this.mapid = 1;
 			this.map;
 			this.ticker;
@@ -47,6 +50,9 @@ module.exports = (function(){
 			this.$el.on('click', function(e){
 				this.requestFullscreen();
 			});
+
+			window.onkeydown = this.keydown;
+			window.onkeyup = this.keyup;
 		},
 
 		initializeMap: function() {
@@ -89,7 +95,23 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			console.log('update');
+			if(keys[37]) {
+				//links
+				this.player.rotation -= 2;
+			}
+
+			if(keys[39]) {
+				this.player.rotation += 2;
+			}
+
+			if(keys[38]) {
+				if(this.player.speed < 3)
+				{
+					this.player.speed ++;
+				}
+			}
+
+			this.player.update();
 			this.stage.update();
 		},
 
@@ -98,6 +120,15 @@ module.exports = (function(){
 			//boxes.push(new Bound(0, 0, world.width, 1));
 			this.collisionboxes.push(new Bound(0, 0, 1, this.world.height));
 			this.collisionboxes.push(new Bound(this.world.width-1, 0, 1, this.world.height));
+		},
+
+		keyup: function(event) {
+			keys[event.keyCode] = false;
+		},
+
+		keydown: function(event) {
+			keys[event.keyCode] = true;
+			console.log(keys[event.keyCode]);
 		},
 	});
 
