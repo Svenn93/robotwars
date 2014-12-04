@@ -10,22 +10,65 @@ var server = app.listen(3000, function() {
 });
 
 
-/*var five = require('johnny-five');
-var board, led;
+var five = require('johnny-five');
+var board = new five.Board();
 
-board = new five.Board();
 
 board.on('ready', function(){
-	led = new five.Led(13);
-	led2 = new five.Led(12);
-	led.off();
-	led2.off();
-});*/
+	console.log('board is ready');
+
+	joystickDown = new five.Button(2);
+	joystickUp = new five.Button(5);
+	joystickRight = new five.Button(3);
+	joystickLeft = new five.Button(4);
+
+	board.repl.inject({
+		button: joystickDown,
+		button: joystickUp,
+		button: joystickRight,
+		button: joystickLeft
+	})	
+
+	joystickDown.on("up", function(){
+		console.log('down ingedrukt');
+	});
+
+	joystickDown.on("down", function(){
+		console.log('down losgelaten');
+	});
+
+	joystickUp.on("up", function(){
+		console.log('up ingedrukt');
+	});
+
+	joystickUp.on("down", function(){
+		console.log('up losgelaten');
+	});
+
+	joystickRight.on("up", function(){
+		console.log('right ingedrukt');
+	});
+
+	joystickRight.on("down", function(){
+		console.log('right losgelaten');
+	});
+
+	joystickLeft.on("up", function(){
+		console.log('left ingedrukt');
+	});
+
+	joystickLeft.on("down", function(){
+		console.log('left losgelaten');
+	});
+
+});
 
 
-/*app.get('/led/:pin/:state', function(req, res){
+
+
+app.get('/led/:pin/:state', function(req, res){
 	console.log(req.params.pin);
 	console.log(req.params.state);
-});*/
+});
 
 

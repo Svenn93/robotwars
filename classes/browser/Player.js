@@ -57,9 +57,9 @@ module.exports = (function(){
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
 			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
 
-			console.log('direction x: ', directionVector["x"]);
-			console.log('direction y: ', directionVector["y"]);
-			console.log('rotation: ', this.rotation);
+			//console.log('direction x: ', directionVector["x"]);
+			//console.log('direction y: ', directionVector["y"]);
+			//console.log('rotation: ', this.rotation);
 
 
 			accelerationVector["x"] = directionVector["x"] * this.speed;

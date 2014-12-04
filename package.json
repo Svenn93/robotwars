@@ -23,7 +23,8 @@
     "express": "^4.10.4",
     "express-session": "^1.9.2",
     "forever": "^0.13.0",
-    "method-override": "^2.3.0"
+    "method-override": "^2.3.0",
+    "johnny-five": "~0.8.32"
   },
   "repository": {
     "type": "git"
