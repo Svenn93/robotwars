@@ -2,6 +2,7 @@ var Class = require('../core/Class.js');
 var World = require('./World.js');
 var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
+var Player = require('./Player.js');
 
 module.exports = (function(){
 
@@ -14,6 +15,7 @@ module.exports = (function(){
 			this.mapid = 1;
 			this.map;
 			this.ticker;
+			this.player;
 
 			this.stage = new createjs.Stage('cnvs');
 			this.width = this.stage.canvas.width;
@@ -31,6 +33,20 @@ module.exports = (function(){
             shape1.graphics.drawCircle(200,200,200);
 
 			this.stage.addChild(this.world.container);
+			
+			document.fullscreenEnabled = document.fullscreenEnabled || 
+			 							 document.webkitFullscreenEnabled || 
+			 							 document.mozFullScreenEnabled ||
+			 							 document.msFullscreenEnabled;
+
+			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
+										 this.$el[0].webkitRequestFullscreen || 
+										 this.$el[0].mozRequestFullscreen || 
+										 this.$el[0].msRequestFullscreen
+
+			this.$el.on('click', function(e){
+				this.requestFullscreen();
+			});
 		},
 
 		initializeMap: function() {
@@ -57,6 +73,15 @@ module.exports = (function(){
 
 			this.collisionboxes = this.map.collisionboxes;
 			this.boxes = this.map.boxes;
+
+			if(typeof this.player !== 'undefined') {
+				player.x = this.spawnX;
+				player.y = this.spawnY;
+				world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
+			}else {
+				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
+				this.world.container.addChild(this.player.displayobject);
+			}
 
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');

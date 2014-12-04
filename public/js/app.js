@@ -58,11 +58,59 @@ module.exports = (function(){
 	return Eventmanager;
 
 })();
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
+var Class = require('../core/Class.js');
+
+module.exports = (function(){
+
+	var Player = Class.extend({
+		init: function(x, y, friction) {
+			this.x = x;
+			this.y = y;
+			this.velX = 0;
+			this.velY = 0;
+			this.friction = friction;
+			this.speed = 3;
+
+			this.displayobject = new createjs.Container();
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
+
+			this.loadGraphics();
+		},
+
+		loadGraphics: function() {
+			//spritesheet van de speler inladen
+
+			circle = new createjs.Shape();
+    		circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
+    		this.displayobject.addChild(circle);
+
+    		this.displayobject.width = this.width = 15;
+    		this.displayobject.height = this.height = 15;
+		},
+
+		update: function() {
+			this.x += this.velX;
+			this.y += this.velY;
+
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
+
+			this.velX *= this.friction;
+			this.velY *= this.friction;
+		},
+	});
+
+	return Player;
+
+})();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 var World = require('./World.js');
 var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
+var Player = require('./Player.js');
 
 module.exports = (function(){
 
@@ -75,6 +123,7 @@ module.exports = (function(){
 			this.mapid = 1;
 			this.map;
 			this.ticker;
+			this.player;
 
 			this.stage = new createjs.Stage('cnvs');
 			this.width = this.stage.canvas.width;
@@ -92,6 +141,20 @@ module.exports = (function(){
             shape1.graphics.drawCircle(200,200,200);
 
 			this.stage.addChild(this.world.container);
+			
+			document.fullscreenEnabled = document.fullscreenEnabled || 
+			 							 document.webkitFullscreenEnabled || 
+			 							 document.mozFullScreenEnabled ||
+			 							 document.msFullscreenEnabled;
+
+			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
+										 this.$el[0].webkitRequestFullscreen || 
+										 this.$el[0].mozRequestFullscreen || 
+										 this.$el[0].msRequestFullscreen
+
+			this.$el.on('click', function(e){
+				this.requestFullscreen();
+			});
 		},
 
 		initializeMap: function() {
@@ -119,6 +182,15 @@ module.exports = (function(){
 			this.collisionboxes = this.map.collisionboxes;
 			this.boxes = this.map.boxes;
 
+			if(typeof this.player !== 'undefined') {
+				player.x = this.spawnX;
+				player.y = this.spawnY;
+				world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
+			}else {
+				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
+				this.world.container.addChild(this.player.displayobject);
+			}
+
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');
 			this.ticker.addEventListener('tick', this.update.bind(this));
@@ -141,7 +213,7 @@ module.exports = (function(){
 
 })();
 
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
