@@ -117,9 +117,7 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			//console.log(joyStick1);
 			if(keys[37] || joyStick1["left"]){
-				//links
 				this.player.rotation -= 2;
 			}
 
@@ -131,6 +129,13 @@ module.exports = (function(){
 				if(this.player.speed < 3)
 				{
 					this.player.speed ++;
+				}
+			}
+
+			if(joyStick1["down"]) {
+				if(this.player.speed > -3)
+				{
+					this.player.speed --;
 				}
 			}
 

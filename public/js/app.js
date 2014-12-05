@@ -98,6 +98,8 @@ module.exports = (function(){
 		update: function() {
 			//this.x += this.velX;
 			//this.y += this.velY;
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
 
 			this.speed *= this.friction;
 			if(this.speed < 0.1)
@@ -134,6 +136,9 @@ module.exports = (function(){
 
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
+
+			this.x = this.displayobject.x
+			this.y = this.displayobject.y;
 
 			this.velX *= this.friction;
 			this.velY *= this.friction;
@@ -263,9 +268,7 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			//console.log(joyStick1);
 			if(keys[37] || joyStick1["left"]){
-				//links
 				this.player.rotation -= 2;
 			}
 
@@ -277,6 +280,13 @@ module.exports = (function(){
 				if(this.player.speed < 3)
 				{
 					this.player.speed ++;
+				}
+			}
+
+			if(joyStick1["down"]) {
+				if(this.player.speed > -3)
+				{
+					this.player.speed --;
 				}
 			}
 

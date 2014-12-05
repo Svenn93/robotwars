@@ -37,6 +37,8 @@ module.exports = (function(){
 		update: function() {
 			//this.x += this.velX;
 			//this.y += this.velY;
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
 
 			this.speed *= this.friction;
 			if(this.speed < 0.1)
@@ -73,6 +75,9 @@ module.exports = (function(){
 
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
+
+			this.x = this.displayobject.x
+			this.y = this.displayobject.y;
 
 			this.velX *= this.friction;
 			this.velY *= this.friction;
