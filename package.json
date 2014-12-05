@@ -24,7 +24,8 @@
     "express-session": "^1.9.2",
     "forever": "^0.13.0",
     "method-override": "^2.3.0",
-    "johnny-five": "~0.8.32"
+    "johnny-five": "~0.8.32",
+    "socket.io": "~1.2.1"
   },
   "repository": {
     "type": "git"

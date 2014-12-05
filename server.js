@@ -2,73 +2,91 @@
 
 var express = require("express");
 var app = express();
-
-app.use(express.static(__dirname + '/public'));
-
-var server = app.listen(3000, function() {
-  console.log('Server listening at port 3000');
-});
-
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
 
 var five = require('johnny-five');
 var board = new five.Board();
 
+app.use(express.static(__dirname + '/public'));
 
-board.on('ready', function(){
-	console.log('board is ready');
+io.on('connection', function(socket){
+	console.log('socketid: ', socket.id);
 
-	joystickDown = new five.Button(2);
-	joystickUp = new five.Button(5);
-	joystickRight = new five.Button(3);
-	joystickLeft = new five.Button(4);
+	socket.emit('socketid', socket.id);
 
-	board.repl.inject({
-		button: joystickDown,
-		button: joystickUp,
-		button: joystickRight,
-		button: joystickLeft
-	})	
+	board.on('ready', function(){
+		console.log('board is ready');
 
-	joystickDown.on("up", function(){
-		console.log('down ingedrukt');
+		var joystickDown = new five.Button(2);
+		var joystickUp = new five.Button(5);
+		var joystickRight = new five.Button(3);
+		var joystickLeft = new five.Button(4);
+
+		var input = {};
+
+		board.repl.inject({
+			button1: joystickDown,
+			button2: joystickUp,
+			button3: joystickRight,
+			button4: joystickLeft
+		})	
+
+		joystickDown.on("up", function(){
+			console.log('down ingedrukt');
+			input["down"] = 1;
+			socket.emit('userinput', input);
+
+		});
+
+		joystickDown.on("down", function(){
+			input["down"] = 0;
+			console.log('down losgelaten');
+			socket.emit('userinput', input);
+		});
+
+		joystickUp.on("up", function(){
+			input["up"] = 1;
+			console.log('up ingedrukt');
+			socket.emit('userinput', input);
+		});
+
+		joystickUp.on("down", function(){
+			input["up"] = 0;
+			console.log('up losgelaten');
+			socket.emit('userinput', input);
+		});
+
+		joystickRight.on("up", function(){
+			input["right"] = 1;
+			console.log('right ingedrukt');
+			socket.emit('userinput', input);
+		});
+
+		joystickRight.on("down", function(){
+			input["right"] = 0;
+			console.log('right losgelaten');
+			socket.emit('userinput', input);
+		});
+
+		joystickLeft.on("up", function(){
+			input["left"] = 1;
+			console.log('left ingedrukt');
+			socket.emit('userinput', input);
+		});
+
+		joystickLeft.on("down", function(){
+			input["left"] = 0;
+			console.log('left losgelaten');
+			socket.emit('userinput', input);
+		});
 	});
+});
 
-	joystickDown.on("down", function(){
-		console.log('down losgelaten');
-	});
-
-	joystickUp.on("up", function(){
-		console.log('up ingedrukt');
-	});
-
-	joystickUp.on("down", function(){
-		console.log('up losgelaten');
-	});
-
-	joystickRight.on("up", function(){
-		console.log('right ingedrukt');
-	});
-
-	joystickRight.on("down", function(){
-		console.log('right losgelaten');
-	});
-
-	joystickLeft.on("up", function(){
-		console.log('left ingedrukt');
-	});
-
-	joystickLeft.on("down", function(){
-		console.log('left losgelaten');
-	});
-
+server.listen(3000, function() {
+  console.log('Server listening at port 3000');
 });
 
 
-
-
-app.get('/led/:pin/:state', function(req, res){
-	console.log(req.params.pin);
-	console.log(req.params.state);
-});
 
 

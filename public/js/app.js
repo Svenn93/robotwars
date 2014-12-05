@@ -151,16 +151,20 @@ var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 
 var keys = [];
+var joyStick1 = {};
 
 module.exports = (function(){
 
 	var RobotWars = Class.extend({
 
 		init: function($el) {
+			this.initSocket();
+			//GAME LOGICA
 			this.$el = $el;
 			this.collisionboxes = [];
 			this.boxes = [];
 			this.keys = [];
+			this.joyStick1 = {};
 			this.mapid = 1;
 			this.map;
 			this.ticker;
@@ -199,6 +203,24 @@ module.exports = (function(){
 
 			window.onkeydown = this.keydown;
 			window.onkeyup = this.keyup;
+		},
+
+		initSocket: function() {
+			console.log('[RobotWars] INIT SOCKET');
+			this.socket = io('/');
+
+			this.socket.on('socketid', function(data){
+				this.socketid = data;
+				console.log('[RobotWars] socketid: ', this.socketid);
+			});
+
+			this.socket.on('userinput', function(data){
+				for (var key in data){
+					joyStick1[key] = data[key];
+				}
+
+				console.log(data);
+			});
 		},
 
 		initializeMap: function() {
@@ -241,16 +263,17 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			if(keys[37]) {
+			//console.log(joyStick1);
+			if(keys[37] || joyStick1["left"]){
 				//links
 				this.player.rotation -= 2;
 			}
 
-			if(keys[39]) {
+			if(keys[39] || joyStick1["right"]) {
 				this.player.rotation += 2;
 			}
 
-			if(keys[38]) {
+			if(keys[38] || joyStick1["up"]) {
 				if(this.player.speed < 3)
 				{
 					this.player.speed ++;
