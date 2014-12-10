@@ -17,6 +17,8 @@ module.exports = (function(){
 				var oX = hWidths - Math.abs(vX);
 				var oY = hHeights - Math.abs(vY);
 
+				//console.log('ShapeA: ', shapeA, 'ShapeB: ', shapeB);
+
 				if(oX >= oY )
 				{ 
 					if(vY > 0) {

@@ -126,21 +126,25 @@ module.exports = (function(){
 			}
 
 			if(keys[37] || joyStick1["left"]){
+				//this.player.velX--;
 				this.player.rotation -= 2;
 			}
 
 			if(keys[39] || joyStick1["right"]) {
+				//this.player.velX++;
 				this.player.rotation += 2;
 			}
 
 			if(keys[38] || joyStick1["up"]) {
+				//this.player.velY--;
 				if(this.player.speed < 3)
 				{
 					this.player.speed ++;
 				}
 			}
 
-			if(joyStick1["down"]) {
+			if(keys[40] || joyStick1["down"]) {
+				this.player.velY++;
 				if(this.player.speed > -3)
 				{
 					this.player.speed --;
