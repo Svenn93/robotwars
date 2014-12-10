@@ -19,6 +19,54 @@ module.exports = (function(){
 	return Bound;
 
 })();
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js":[function(require,module,exports){
+var Class = require('../core/Class.js');
+
+module.exports = (function(){
+
+	var CollisionDetection = Class.extend({
+		init: function() {
+
+		},
+
+		checkCollision: function(shapeA, shapeB){
+			var vX = (shapeA.x + (shapeA.width/2)) - (shapeB.x + (shapeB.width/2));
+			var vY = (shapeA.y + (shapeA.height/2)) - (shapeB.y + (shapeB.height/2));
+			var hWidths = (shapeA.width/2) + (shapeB.width/2);
+			var hHeights = (shapeA.height/2) + (shapeB.height/2);
+
+			if(Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+				var oX = hWidths - Math.abs(vX);
+				var oY = hHeights - Math.abs(vY);
+
+				if(oX >= oY )
+				{ 
+					if(vY > 0) {
+						shapeA.y += oY;
+
+					}else {
+						shapeA.y -= oY;
+					}
+					return true;
+
+				}else {
+
+					if(vX > 0) {
+						shapeA.x += oX;
+					}else {
+						shapeA.x -= oX;
+					}
+					return true;
+				}
+			}
+
+			return false;
+		},
+	});
+
+	return CollisionDetection;
+
+})();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
@@ -27,28 +75,31 @@ module.exports = (function(){
 	var Eventmanager = Class.extend({
 
 		init: function(target){
-			this.target = target || window,
+			this.target = target || window;
         	this.events = {};
 		}, 
 
 		observe: function(eventName, cb) {
-			if (this.events[eventName]) this.events[eventName].push(cb);
-        	else this.events[eventName] = new Array(cb);
+			if (this.events[eventName]) {
+				this.events[eventName].push(cb);
+			}else {
+				this.events[eventName] = new Array(cb);
+			}
         	return this.target;
 		},
 
 		stopObserving: function(eventName, cb) {
 			if (this.events[eventName]) {
             	var i = this.events[eventName].indexOf(cb);
-            	if (i > -1) this.events[eventName].splice(i, 1);
-            	else return false;
+            	if (i > -1) {
+            		this.events[eventName].splice(i, 1);
+            	}else {return false;}
             	return true;
-        	}
-        	else return false;
+        	}else {return false;}
 		},
 
 		fire: function(eventName) {
-			if (!this.events[eventName]) return false;
+			if (!this.events[eventName]) {return false;}
         	for (var i = 0; i < this.events[eventName].length; i++) {
             	this.events[eventName][i].apply(this.target, Array.prototype.slice.call(arguments, 1));
         	}
@@ -59,6 +110,7 @@ module.exports = (function(){
 
 })();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
@@ -67,13 +119,12 @@ module.exports = (function(){
 		init: function(x, y, friction) {
 			this.x = x;
 			this.y = y;
-			this.velX = 0;
-			this.velY = 0;
 			this.friction = friction;
-			this.speed = 3;
+			this.speed = 0;
 			this.rotation = 0;
 
 			this.displayobject = new createjs.Container();
+
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
@@ -82,17 +133,30 @@ module.exports = (function(){
 
 		loadGraphics: function() {
 			//spritesheet van de speler inladen
+			var rect = new createjs.Shape();
+			rect.graphics.beginFill("orange").drawRect(0, 0, 30, 30);
+			this.displayobject.addChild(rect);
 
-			circle = new createjs.Shape();
-    		circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
-    		this.displayobject.addChild(circle);
+			this.displayobject.width = this.width = 30;
+			this.displayobject.height = this.height = 30;
+			this.displayobject.rotation = this.rotation;
 
-    		circle2 = new createjs.Shape();
-    		circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
-    		this.displayobject.addChild(circle2);
+			//this.displayobject.regX = 15;
+			//this.displayobject.regY = 15;
 
-    		this.displayobject.width = this.width = 15;
-    		this.displayobject.height = this.height = 15;
+			console.log("this: ", this);
+			console.log("Bounds: ", this.displayobject.getBounds());
+
+    		//this.displayobject.width = this.width = 30;
+    		//this.displayobject.height = this.height = 30;
+
+			//circle = new createjs.Shape();
+    		//circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
+    		//this.displayobject.addChild(circle);
+
+    		//circle2 = new createjs.Shape();
+    		//circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
+    		//this.displayobject.addChild(circle2);
 		},
 
 		update: function() {
@@ -114,9 +178,8 @@ module.exports = (function(){
 				this.rotation = 0;
 			}
 
-			directionVector = [];
-			accelerationVector = [];
-			speedVector = [];
+			var directionVector = [];
+			var accelerationVector = [];
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
 			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
 
@@ -137,7 +200,7 @@ module.exports = (function(){
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
 
-			this.x = this.displayobject.x
+			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
 
 			this.velX *= this.friction;
@@ -149,11 +212,13 @@ module.exports = (function(){
 
 })();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 var World = require('./World.js');
 var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
+var CollisionDetection = require('./CollisionDetection.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -171,9 +236,7 @@ module.exports = (function(){
 			this.keys = [];
 			this.joyStick1 = {};
 			this.mapid = 1;
-			this.map;
-			this.ticker;
-			this.player;
+			this.collisionDetection = new CollisionDetection();
 
 			this.stage = new createjs.Stage('cnvs');
 			this.width = this.stage.canvas.width;
@@ -200,7 +263,7 @@ module.exports = (function(){
 			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
 										 this.$el[0].webkitRequestFullscreen || 
 										 this.$el[0].mozRequestFullscreen || 
-										 this.$el[0].msRequestFullscreen
+										 this.$el[0].msRequestFullscreen;
 
 			this.$el.on('click', function(e){
 				this.requestFullscreen();
@@ -254,9 +317,9 @@ module.exports = (function(){
 			this.boxes = this.map.boxes;
 
 			if(typeof this.player !== 'undefined') {
-				player.x = this.spawnX;
-				player.y = this.spawnY;
-				world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
+				this.player.x = 0;//this.spawnX;
+				this.player.y = 0;//this.spawnY;
+				this.world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
 			}else {
 				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
 				this.world.container.addChild(this.player.displayobject);
@@ -268,6 +331,14 @@ module.exports = (function(){
 		},
 
 		update: function() {
+
+			for (var i = 0; i < this.collisionboxes.length; i++) {
+				if(this.collisionDetection.checkCollision(this.player, this.collisionboxes[i])) {
+					console.log("colission");
+					this.player.speed = 0;
+				}
+			}
+
 			if(keys[37] || joyStick1["left"]){
 				this.player.rotation -= 2;
 			}
@@ -315,7 +386,8 @@ module.exports = (function(){
 
 })();
 
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
@@ -342,6 +414,7 @@ module.exports = (function(){
 })();
 
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js":[function(require,module,exports){
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 var Tile = require ('./Tile.js');
 var Eventmanager = require('./Eventmanager.js');
@@ -407,7 +480,6 @@ module.exports = (function(){
 		},
 
 		initLayer: function(layerData, tilesetSheet, tilewidth, tileheight) {
-			var platformteller = 0;
 			for (var y = 0; y < layerData.height; y++) {
 				for ( var x = 0; x < layerData.width; x++) {
 					var cellBitmap = new createjs.Sprite(tilesetSheet);
@@ -420,8 +492,6 @@ module.exports = (function(){
 					
 					if(layerData.data[idx] !== 0)
 					{
-						platformteller++;
-						var name = "platform" + platformteller;
 						var worldTile = "";
 						switch (layerData.name)
 						{
@@ -448,14 +518,15 @@ module.exports = (function(){
 })();
 
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Eventmanager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js","./Tile.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js":[function(require,module,exports){
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
 
 	var World = Class.extend({
 		init: function(width, height) {
-			this.boundH;
-			this.boundW;
+			this.boundH = "";
+			this.boundW = "";
 
 			this.friction = 0.8;
 			this.width = width;

@@ -1,3 +1,4 @@
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 var Tile = require ('./Tile.js');
 var Eventmanager = require('./Eventmanager.js');
@@ -63,7 +64,6 @@ module.exports = (function(){
 		},
 
 		initLayer: function(layerData, tilesetSheet, tilewidth, tileheight) {
-			var platformteller = 0;
 			for (var y = 0; y < layerData.height; y++) {
 				for ( var x = 0; x < layerData.width; x++) {
 					var cellBitmap = new createjs.Sprite(tilesetSheet);
@@ -76,8 +76,6 @@ module.exports = (function(){
 					
 					if(layerData.data[idx] !== 0)
 					{
-						platformteller++;
-						var name = "platform" + platformteller;
 						var worldTile = "";
 						switch (layerData.name)
 						{

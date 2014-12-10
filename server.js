@@ -1,5 +1,4 @@
-/* globals process:true */
-
+/* globals __dirname:true */
 var express = require("express");
 var app = express();
 var server = require('http').Server(app);
@@ -30,7 +29,7 @@ io.on('connection', function(socket){
 			button2: joystickUp,
 			button3: joystickRight,
 			button4: joystickLeft
-		})	
+		});	
 
 		joystickDown.on("up", function(){
 			console.log('down ingedrukt');

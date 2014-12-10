@@ -1,8 +1,10 @@
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 var World = require('./World.js');
 var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
+var CollisionDetection = require('./CollisionDetection.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -20,9 +22,7 @@ module.exports = (function(){
 			this.keys = [];
 			this.joyStick1 = {};
 			this.mapid = 1;
-			this.map;
-			this.ticker;
-			this.player;
+			this.collisionDetection = new CollisionDetection();
 
 			this.stage = new createjs.Stage('cnvs');
 			this.width = this.stage.canvas.width;
@@ -49,7 +49,7 @@ module.exports = (function(){
 			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
 										 this.$el[0].webkitRequestFullscreen || 
 										 this.$el[0].mozRequestFullscreen || 
-										 this.$el[0].msRequestFullscreen
+										 this.$el[0].msRequestFullscreen;
 
 			this.$el.on('click', function(e){
 				this.requestFullscreen();
@@ -103,9 +103,9 @@ module.exports = (function(){
 			this.boxes = this.map.boxes;
 
 			if(typeof this.player !== 'undefined') {
-				player.x = this.spawnX;
-				player.y = this.spawnY;
-				world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
+				this.player.x = 0;//this.spawnX;
+				this.player.y = 0;//this.spawnY;
+				this.world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
 			}else {
 				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
 				this.world.container.addChild(this.player.displayobject);
@@ -117,6 +117,14 @@ module.exports = (function(){
 		},
 
 		update: function() {
+
+			for (var i = 0; i < this.collisionboxes.length; i++) {
+				if(this.collisionDetection.checkCollision(this.player, this.collisionboxes[i])) {
+					console.log("colission");
+					this.player.speed = 0;
+				}
+			}
+
 			if(keys[37] || joyStick1["left"]){
 				this.player.rotation -= 2;
 			}

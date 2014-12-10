@@ -1,3 +1,4 @@
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
@@ -6,13 +7,12 @@ module.exports = (function(){
 		init: function(x, y, friction) {
 			this.x = x;
 			this.y = y;
-			this.velX = 0;
-			this.velY = 0;
 			this.friction = friction;
-			this.speed = 3;
+			this.speed = 0;
 			this.rotation = 0;
 
 			this.displayobject = new createjs.Container();
+
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
@@ -21,17 +21,30 @@ module.exports = (function(){
 
 		loadGraphics: function() {
 			//spritesheet van de speler inladen
+			var rect = new createjs.Shape();
+			rect.graphics.beginFill("orange").drawRect(0, 0, 30, 30);
+			this.displayobject.addChild(rect);
 
-			circle = new createjs.Shape();
-    		circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
-    		this.displayobject.addChild(circle);
+			this.displayobject.width = this.width = 30;
+			this.displayobject.height = this.height = 30;
+			this.displayobject.rotation = this.rotation;
 
-    		circle2 = new createjs.Shape();
-    		circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
-    		this.displayobject.addChild(circle2);
+			//this.displayobject.regX = 15;
+			//this.displayobject.regY = 15;
 
-    		this.displayobject.width = this.width = 15;
-    		this.displayobject.height = this.height = 15;
+			console.log("this: ", this);
+			console.log("Bounds: ", this.displayobject.getBounds());
+
+    		//this.displayobject.width = this.width = 30;
+    		//this.displayobject.height = this.height = 30;
+
+			//circle = new createjs.Shape();
+    		//circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
+    		//this.displayobject.addChild(circle);
+
+    		//circle2 = new createjs.Shape();
+    		//circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
+    		//this.displayobject.addChild(circle2);
 		},
 
 		update: function() {
@@ -53,9 +66,8 @@ module.exports = (function(){
 				this.rotation = 0;
 			}
 
-			directionVector = [];
-			accelerationVector = [];
-			speedVector = [];
+			var directionVector = [];
+			var accelerationVector = [];
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
 			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
 
@@ -76,7 +88,7 @@ module.exports = (function(){
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
 
-			this.x = this.displayobject.x
+			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
 
 			this.velX *= this.friction;

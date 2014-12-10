@@ -1,3 +1,4 @@
+/*globals createjs:true*/
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
