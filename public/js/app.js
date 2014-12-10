@@ -19,6 +19,47 @@ module.exports = (function(){
 	return Bound;
 
 })();
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js":[function(require,module,exports){
+var Class = require('../core/Class.js');
+
+module.exports = (function(){
+	
+	var Bullet = Class.extend({
+		init: function(x, y, rotation){
+			this.x = x;
+			this.y = y;
+			console.log('bulleeet');
+			this.rotation = rotation;
+			this.speed = 5;
+			this.displayobject = new createjs.Container();
+			this.width = 5;
+			this.height = 5;
+
+			this.displayobject.x = x;
+			this.displayobject.y = y;
+			this.displayobject.width = this.width;
+			this.displayobject.height = this.height;
+			var bullet = new createjs.Shape();
+			bullet.graphics.beginFill("red").drawRect(0, 0, 5, 5);
+			this.displayobject.addChild(bullet);
+		},
+
+		update: function() {
+			var directionVector = [];
+			var accelerationVector = [];
+			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
+			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
+
+			accelerationVector["x"] = directionVector["x"] * this.speed;
+			accelerationVector["y"] = directionVector["y"] * this.speed;
+
+			this.x = this.displayobject.x += accelerationVector["x"];
+			this.y = this.displayobject.y += accelerationVector["y"];
+		}
+	});
+
+	return Bullet;
+})();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
@@ -39,6 +80,7 @@ module.exports = (function(){
 				var oX = hWidths - Math.abs(vX);
 				var oY = hHeights - Math.abs(vY);
 
+				console.log('ja collision');
 				//console.log('ShapeA: ', shapeA, 'ShapeB: ', shapeB);
 
 				if(oX >= oY )
@@ -138,25 +180,25 @@ module.exports = (function(){
 		loadGraphics: function() {
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
-			rect.graphics.beginFill("orange").drawRect(0, 0, 30, 30);
+			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
 			this.displayobject.addChild(rect);
 
 			/*this.displayobject.width = this.width = 30;
 			this.displayobject.height = this.height = 30;
 			this.displayobject.rotation = this.rotation;*/
 
-			//this.displayobject.regX = 15;
-			//this.displayobject.regY = 15;
+			this.displayobject.regX = 0;
+			this.displayobject.regY = 0;
 
 			/*console.log("this: ", this);
 			console.log("Bounds: ", this.displayobject.getBounds());*/
 
 			var spritesheet = new createjs.SpriteSheet({
-				"images":["../images/character.png"],
-				"frames": {"width": 20, "height": 38, "count":7, "regX": 10, "regY": 19},
+				"images":["../images/robot.png"],
+				"frames": {"width": 83, "height": 81, "count":8, "regX": 41.5, "regY": 40.5},
 				"animations": {
-					runRight: {
-						frames:[0, 1, 2, 1],
+					drive: {
+						frames:[0, 1, 2, 3],
 						speed: 0.1
 					},
 					idle: {
@@ -165,12 +207,14 @@ module.exports = (function(){
 				}
 			});
 
-			this.playerSprite = new createjs.Sprite(spritesheet, "idle");
-			this.playerSprite.x = 15;
-			this.playerSprite.y = 15;
+			this.playerSprite = new createjs.Sprite(spritesheet, "drive");
+			this.playerSprite.x = 40;
+			this.playerSprite.y = 40;
 			this.displayobject.addChild(this.playerSprite);
-			this.displayobject.width = this.width = 30;
-			this.displayobject.height = this.height = 30;
+			this.displayobject.width = this.width = 80;
+			this.displayobject.height = this.height = 80;
+
+			console.log("Sprite: ", this.playerSprite);
 
     		//this.displayobject.width = this.width = 30;
     		//this.displayobject.height = this.height = 30;
@@ -239,7 +283,7 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
-		},
+		}
 	});
 
 	return Player;
@@ -253,6 +297,7 @@ var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 var CollisionDetection = require('./CollisionDetection.js');
+var Bullet = require('./Bullet.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -270,6 +315,7 @@ module.exports = (function(){
 			this.keys = [];
 			this.joyStick1 = {};
 			this.mapid = 1;
+			this.player1Projectiles = [];
 			this.collisionDetection = new CollisionDetection();
 
 			this.stage = new createjs.Stage('cnvs');
@@ -294,13 +340,13 @@ module.exports = (function(){
 			 							 document.mozFullScreenEnabled ||
 			 							 document.msFullscreenEnabled;
 
-			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
+			document.body.requestFullscreen = this.$el[0].requestFullscreen || 
 										 this.$el[0].webkitRequestFullscreen || 
 										 this.$el[0].mozRequestFullscreen || 
 										 this.$el[0].msRequestFullscreen;
 
 			this.$el.on('click', function(e){
-				this.requestFullscreen();
+				document.body.requestFullscreen();
 			});
 
 			window.onkeydown = this.keydown;
@@ -316,13 +362,17 @@ module.exports = (function(){
 				console.log('[RobotWars] socketid: ', this.socketid);
 			});
 
-			this.socket.on('userinput', function(data){
+			this.socket.on('userinput', (function(data){
 				for (var key in data){
 					joyStick1[key] = data[key];
 				}
 
-				console.log(data);
-			});
+				if(joyStick1["fire"]) {
+					this.attack(1);
+				}
+
+				//console.log(data);
+			}).bind(this));
 		},
 
 		initializeMap: function() {
@@ -344,62 +394,91 @@ module.exports = (function(){
 			this.buildBounds();
 			this.world.addChild(this.map.displayobject);
 			this.stage.update();
-			this.spawnX = this.map.spawnX1;
-			this.spawnY = this.map.spawnY1;
+
+			this.spawnX1 = this.map.spawnX1;
+			this.spawnY1 = this.map.spawnY1;
+			this.spawnX2 = this.map.spawnX2;
+			this.spawnY2 = this.map.spawnY2;
 
 			this.collisionboxes = this.map.collisionboxes;
 			this.boxes = this.map.boxes;
 
-			if(typeof this.player !== 'undefined') {
-				this.player.x = 0;//this.spawnX;
-				this.player.y = 0;//this.spawnY;
-				this.world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
-			}else {
-				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
-				this.world.container.addChild(this.player.displayobject);
-			}
+			this.player1 = new Player(this.spawnX1, this.spawnY1, this.world.friction);
+			this.world.container.addChild(this.player1.displayobject);
+
+			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
+			this.world.container.addChild(this.player2.displayobject);
 
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');
 			this.ticker.addEventListener('tick', this.update.bind(this));
 		},
 
+		attack: function(player) {
+			if(player === 1){
+				console.log('player 1 attacks');
+				var bullet = new Bullet(this.player1.x, this.player1.y, this.player1.rotation);
+				this.world.container.addChild(bullet.displayobject);
+				this.player1Projectiles.push(bullet);
+			}
+		},
+
 		update: function() {
 
 			for (var i = 0; i < this.collisionboxes.length; i++) {
-				if(this.collisionDetection.checkCollision(this.player, this.collisionboxes[i])) {
+				if(this.collisionDetection.checkCollision(this.player1, this.collisionboxes[i])) {
 					console.log("colission");
-					this.player.speed = 0;
+					this.player1.speed = 0;
 				}
 			}
 
 			if(keys[37] || joyStick1["left"]){
 				//this.player.velX--;
-				this.player.rotation -= 2;
+				this.player1.rotation -= 2;
 			}
 
 			if(keys[39] || joyStick1["right"]) {
 				//this.player.velX++;
-				this.player.rotation += 2;
+				this.player1.rotation += 2;
 			}
 
 			if(keys[38] || joyStick1["up"]) {
 				//this.player.velY--;
-				if(this.player.speed < 3)
+				if(this.player1.speed < 3)
 				{
-					this.player.speed ++;
+					this.player1.speed ++;
 				}
 			}
 
 			if(keys[40] || joyStick1["down"]) {
-				this.player.velY++;
-				if(this.player.speed > -3)
+				this.player1.velY++;
+				if(this.player1.speed > -3)
 				{
-					this.player.speed --;
+					this.player1.speed --;
 				}
 			}
 
-			this.player.update();
+			//console.log('p1p: ', this.player1Projectiles);
+
+			for(var j = 0; j < this.player1Projectiles.length; j++) {
+				var collision = false;
+				for (var f = 0; f < this.collisionboxes.length; f++) {
+					if(this.collisionDetection.checkCollision(this.player1Projectiles[j], this.collisionboxes[f])) {
+						collision = true;
+						this.world.container.removeChild(this.player1Projectiles[j].displayobject);
+						this.player1Projectiles.splice(j,1);
+						console.log('de array: ', this.player1Projectiles);
+						break;
+					}
+				}
+				//mag niet meer geupdate worden als er collision is, is al verwijderd uit de array
+				if(!collision)
+				{
+					this.player1Projectiles[j].update();
+				}
+			}
+
+			this.player1.update();
 			this.stage.update();
 		},
 
@@ -424,7 +503,7 @@ module.exports = (function(){
 
 })();
 
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 
@@ -512,6 +591,9 @@ module.exports = (function(){
 
 			this.spawnX1 = this.mapData.spawnpoint1[0];
 			this.spawnY1 = this.mapData.spawnpoint1[1];
+
+			this.spawnX2 = this.mapData.spawnpoint2[0];
+			this.spawnY2 = this.mapData.spawnpoint2[1];
 
 			this.event.fire('maploaded');
 			

@@ -21,8 +21,9 @@ io.on('connection', function(socket){
 		var joystickUp = new five.Button(5);
 		var joystickRight = new five.Button(3);
 		var joystickLeft = new five.Button(4);
+		var fireButton = new five.Button(6);
 
-		var input = {};
+		var input1 = {};
 
 		board.repl.inject({
 			button1: joystickDown,
@@ -33,51 +34,61 @@ io.on('connection', function(socket){
 
 		joystickDown.on("up", function(){
 			console.log('down ingedrukt');
-			input["down"] = 1;
-			socket.emit('userinput', input);
+			input1["down"] = 1;
+			socket.emit('userinput', input1);
 
 		});
 
 		joystickDown.on("down", function(){
-			input["down"] = 0;
+			input1["down"] = 0;
 			console.log('down losgelaten');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickUp.on("up", function(){
-			input["up"] = 1;
+			input1["up"] = 1;
 			console.log('up ingedrukt');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickUp.on("down", function(){
-			input["up"] = 0;
+			input1["up"] = 0;
 			console.log('up losgelaten');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickRight.on("up", function(){
-			input["right"] = 1;
+			input1["right"] = 1;
 			console.log('right ingedrukt');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickRight.on("down", function(){
-			input["right"] = 0;
+			input1["right"] = 0;
 			console.log('right losgelaten');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickLeft.on("up", function(){
-			input["left"] = 1;
+			input1["left"] = 1;
 			console.log('left ingedrukt');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
 		});
 
 		joystickLeft.on("down", function(){
-			input["left"] = 0;
+			input1["left"] = 0;
 			console.log('left losgelaten');
-			socket.emit('userinput', input);
+			socket.emit('userinput', input1);
+		});
+
+		fireButton.on("down", function(){
+			input1["fire"] = 0;
+			socket.emit('userinput', input1);
+		});
+
+		fireButton.on("up", function(){
+			input1["fire"] = 1;
+			socket.emit('userinput', input1);
 		});
 	});
 });

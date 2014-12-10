@@ -24,25 +24,25 @@ module.exports = (function(){
 		loadGraphics: function() {
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
-			rect.graphics.beginFill("orange").drawRect(0, 0, 30, 30);
+			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
 			this.displayobject.addChild(rect);
 
 			/*this.displayobject.width = this.width = 30;
 			this.displayobject.height = this.height = 30;
 			this.displayobject.rotation = this.rotation;*/
 
-			//this.displayobject.regX = 15;
-			//this.displayobject.regY = 15;
+			this.displayobject.regX = 0;
+			this.displayobject.regY = 0;
 
 			/*console.log("this: ", this);
 			console.log("Bounds: ", this.displayobject.getBounds());*/
 
 			var spritesheet = new createjs.SpriteSheet({
-				"images":["../images/character.png"],
-				"frames": {"width": 20, "height": 38, "count":7, "regX": 10, "regY": 19},
+				"images":["../images/robot.png"],
+				"frames": {"width": 83, "height": 81, "count":8, "regX": 41.5, "regY": 40.5},
 				"animations": {
-					runRight: {
-						frames:[0, 1, 2, 1],
+					drive: {
+						frames:[0, 1, 2, 3],
 						speed: 0.1
 					},
 					idle: {
@@ -51,12 +51,14 @@ module.exports = (function(){
 				}
 			});
 
-			this.playerSprite = new createjs.Sprite(spritesheet, "idle");
-			this.playerSprite.x = 15;
-			this.playerSprite.y = 15;
+			this.playerSprite = new createjs.Sprite(spritesheet, "drive");
+			this.playerSprite.x = 40;
+			this.playerSprite.y = 40;
 			this.displayobject.addChild(this.playerSprite);
-			this.displayobject.width = this.width = 30;
-			this.displayobject.height = this.height = 30;
+			this.displayobject.width = this.width = 80;
+			this.displayobject.height = this.height = 80;
+
+			console.log("Sprite: ", this.playerSprite);
 
     		//this.displayobject.width = this.width = 30;
     		//this.displayobject.height = this.height = 30;
@@ -125,7 +127,7 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
-		},
+		}
 	});
 
 	return Player;

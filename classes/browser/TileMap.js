@@ -59,6 +59,9 @@ module.exports = (function(){
 			this.spawnX1 = this.mapData.spawnpoint1[0];
 			this.spawnY1 = this.mapData.spawnpoint1[1];
 
+			this.spawnX2 = this.mapData.spawnpoint2[0];
+			this.spawnY2 = this.mapData.spawnpoint2[1];
+
 			this.event.fire('maploaded');
 			
 		},

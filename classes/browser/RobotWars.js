@@ -5,6 +5,7 @@ var TileMap = require('./TileMap.js');
 var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 var CollisionDetection = require('./CollisionDetection.js');
+var Bullet = require('./Bullet.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -22,6 +23,7 @@ module.exports = (function(){
 			this.keys = [];
 			this.joyStick1 = {};
 			this.mapid = 1;
+			this.player1Projectiles = [];
 			this.collisionDetection = new CollisionDetection();
 
 			this.stage = new createjs.Stage('cnvs');
@@ -46,13 +48,13 @@ module.exports = (function(){
 			 							 document.mozFullScreenEnabled ||
 			 							 document.msFullscreenEnabled;
 
-			this.$el[0].requestFullscreen = this.$el[0].requestFullscreen || 
+			document.body.requestFullscreen = this.$el[0].requestFullscreen || 
 										 this.$el[0].webkitRequestFullscreen || 
 										 this.$el[0].mozRequestFullscreen || 
 										 this.$el[0].msRequestFullscreen;
 
 			this.$el.on('click', function(e){
-				this.requestFullscreen();
+				document.body.requestFullscreen();
 			});
 
 			window.onkeydown = this.keydown;
@@ -68,13 +70,17 @@ module.exports = (function(){
 				console.log('[RobotWars] socketid: ', this.socketid);
 			});
 
-			this.socket.on('userinput', function(data){
+			this.socket.on('userinput', (function(data){
 				for (var key in data){
 					joyStick1[key] = data[key];
 				}
 
-				console.log(data);
-			});
+				if(joyStick1["fire"]) {
+					this.attack(1);
+				}
+
+				//console.log(data);
+			}).bind(this));
 		},
 
 		initializeMap: function() {
@@ -96,62 +102,91 @@ module.exports = (function(){
 			this.buildBounds();
 			this.world.addChild(this.map.displayobject);
 			this.stage.update();
-			this.spawnX = this.map.spawnX1;
-			this.spawnY = this.map.spawnY1;
+
+			this.spawnX1 = this.map.spawnX1;
+			this.spawnY1 = this.map.spawnY1;
+			this.spawnX2 = this.map.spawnX2;
+			this.spawnY2 = this.map.spawnY2;
 
 			this.collisionboxes = this.map.collisionboxes;
 			this.boxes = this.map.boxes;
 
-			if(typeof this.player !== 'undefined') {
-				this.player.x = 0;//this.spawnX;
-				this.player.y = 0;//this.spawnY;
-				this.world.container.setChildIndex(this.player.displayobject, this.world.container.getNumChildren() - 1);
-			}else {
-				this.player = new Player(this.spawnX, this.spawnY, this.world.friction);
-				this.world.container.addChild(this.player.displayobject);
-			}
+			this.player1 = new Player(this.spawnX1, this.spawnY1, this.world.friction);
+			this.world.container.addChild(this.player1.displayobject);
+
+			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
+			this.world.container.addChild(this.player2.displayobject);
 
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');
 			this.ticker.addEventListener('tick', this.update.bind(this));
 		},
 
+		attack: function(player) {
+			if(player === 1){
+				console.log('player 1 attacks');
+				var bullet = new Bullet(this.player1.x, this.player1.y, this.player1.rotation);
+				this.world.container.addChild(bullet.displayobject);
+				this.player1Projectiles.push(bullet);
+			}
+		},
+
 		update: function() {
 
 			for (var i = 0; i < this.collisionboxes.length; i++) {
-				if(this.collisionDetection.checkCollision(this.player, this.collisionboxes[i])) {
+				if(this.collisionDetection.checkCollision(this.player1, this.collisionboxes[i])) {
 					console.log("colission");
-					this.player.speed = 0;
+					this.player1.speed = 0;
 				}
 			}
 
 			if(keys[37] || joyStick1["left"]){
 				//this.player.velX--;
-				this.player.rotation -= 2;
+				this.player1.rotation -= 2;
 			}
 
 			if(keys[39] || joyStick1["right"]) {
 				//this.player.velX++;
-				this.player.rotation += 2;
+				this.player1.rotation += 2;
 			}
 
 			if(keys[38] || joyStick1["up"]) {
 				//this.player.velY--;
-				if(this.player.speed < 3)
+				if(this.player1.speed < 3)
 				{
-					this.player.speed ++;
+					this.player1.speed ++;
 				}
 			}
 
 			if(keys[40] || joyStick1["down"]) {
-				this.player.velY++;
-				if(this.player.speed > -3)
+				this.player1.velY++;
+				if(this.player1.speed > -3)
 				{
-					this.player.speed --;
+					this.player1.speed --;
 				}
 			}
 
-			this.player.update();
+			//console.log('p1p: ', this.player1Projectiles);
+
+			for(var j = 0; j < this.player1Projectiles.length; j++) {
+				var collision = false;
+				for (var f = 0; f < this.collisionboxes.length; f++) {
+					if(this.collisionDetection.checkCollision(this.player1Projectiles[j], this.collisionboxes[f])) {
+						collision = true;
+						this.world.container.removeChild(this.player1Projectiles[j].displayobject);
+						this.player1Projectiles.splice(j,1);
+						console.log('de array: ', this.player1Projectiles);
+						break;
+					}
+				}
+				//mag niet meer geupdate worden als er collision is, is al verwijderd uit de array
+				if(!collision)
+				{
+					this.player1Projectiles[j].update();
+				}
+			}
+
+			this.player1.update();
 			this.stage.update();
 		},
 
