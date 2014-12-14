@@ -57,8 +57,8 @@ module.exports = (function(){
 				document.body.requestFullscreen();
 			});
 
-			window.onkeydown = this.keydown;
-			window.onkeyup = this.keyup;
+			window.onkeydown = (this.keydown).bind(this);
+			window.onkeyup = (this.keyup).bind(this);
 		},
 
 		initSocket: function() {
@@ -76,7 +76,7 @@ module.exports = (function(){
 				}
 
 				if(joyStick1["fire"]) {
-					this.attack(1);
+					this.player1.attack(1);
 				}
 
 				//console.log(data);
@@ -166,27 +166,11 @@ module.exports = (function(){
 				}
 			}
 
-			//console.log('p1p: ', this.player1Projectiles);
-
-			for(var j = 0; j < this.player1Projectiles.length; j++) {
-				var collision = false;
-				for (var f = 0; f < this.collisionboxes.length; f++) {
-					if(this.collisionDetection.checkCollision(this.player1Projectiles[j], this.collisionboxes[f])) {
-						collision = true;
-						this.world.container.removeChild(this.player1Projectiles[j].displayobject);
-						this.player1Projectiles.splice(j,1);
-						console.log('de array: ', this.player1Projectiles);
-						break;
-					}
-				}
-				//mag niet meer geupdate worden als er collision is, is al verwijderd uit de array
-				if(!collision)
-				{
-					this.player1Projectiles[j].update();
-				}
+			for(var j = 0; j < this.player1.bullets.length; j++) {
+					this.player1.bullets[j].update(this.collisionboxes);
 			}
 
-			this.player1.update();
+			this.player1.update(this.collisionboxes);
 			this.stage.update();
 		},
 
@@ -198,12 +182,15 @@ module.exports = (function(){
 		},
 
 		keyup: function(event) {
+			if(event.keyCode == 32){
+				//debug
+				this.player1.attack("bullet");
+			}
 			keys[event.keyCode] = false;
 		},
 
 		keydown: function(event) {
 			keys[event.keyCode] = true;
-			console.log(keys[event.keyCode]);
 		},
 	});
 

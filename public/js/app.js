@@ -21,19 +21,23 @@ module.exports = (function(){
 })();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
+var CollisionDetection = require('./CollisionDetection.js');
+var Eventmanager = require('./Eventmanager.js');
 
 module.exports = (function(){
 	
 	var Bullet = Class.extend({
 		init: function(x, y, rotation){
+			this.collisionDetection = new CollisionDetection();
+			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
-			console.log('bulleeet');
 			this.rotation = rotation;
 			this.speed = 5;
 			this.displayobject = new createjs.Container();
 			this.width = 5;
 			this.height = 5;
+			this.index = 0;
 
 			this.displayobject.x = x;
 			this.displayobject.y = y;
@@ -44,7 +48,14 @@ module.exports = (function(){
 			this.displayobject.addChild(bullet);
 		},
 
-		update: function() {
+		update: function(collisionboxes) {
+
+			for (var i= 0; i< collisionboxes.length; i++) {
+				if(this.collisionDetection.checkCollision(this, collisionboxes[i])){
+					this.event.fire("boundsHit");
+				}
+			}
+
 			var directionVector = [];
 			var accelerationVector = [];
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
@@ -55,12 +66,12 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x += accelerationVector["x"];
 			this.y = this.displayobject.y += accelerationVector["y"];
-		}
+		},
 	});
 
 	return Bullet;
 })();
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Eventmanager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
@@ -80,7 +91,6 @@ module.exports = (function(){
 				var oX = hWidths - Math.abs(vX);
 				var oY = hHeights - Math.abs(vY);
 
-				console.log('ja collision');
 				//console.log('ShapeA: ', shapeA, 'ShapeB: ', shapeB);
 
 				if(oX >= oY )
@@ -156,6 +166,7 @@ module.exports = (function(){
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
+var Bullet = require('./Bullet.js');
 
 module.exports = (function(){
 
@@ -168,6 +179,7 @@ module.exports = (function(){
 			this.rotation = 0;
 			this.velX = 0;
 			this.velY = 0;
+			this.bullets = [];
 
 			this.displayobject = new createjs.Container();
 
@@ -230,19 +242,8 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			/*this.x += this.velX;
-			this.y += this.velY;
 
-			console.log(this.x, this.y);
-
-			this.displayobject.x = this.x;
-			this.displayobject.y = this.y;
-
-			console.log(this.displayobject.x, this.displayobject.y);
-		
-			this.velX *= this.friction;
-			this.velY *= this.friction;*/
-
+			//wanneer de x-waarde wordt aangepast in een collision, displayobject x gelijkzetten
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
@@ -264,11 +265,6 @@ module.exports = (function(){
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
 			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
 
-			//console.log('direction x: ', directionVector["x"]);
-			//console.log('direction y: ', directionVector["y"]);
-			//console.log('rotation: ', this.rotation);
-
-
 			accelerationVector["x"] = directionVector["x"] * this.speed;
 			accelerationVector["y"] = directionVector["y"] * this.speed;
 
@@ -283,13 +279,41 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
-		}
+		},
+
+		attack: function(type) {
+			switch(type){
+				case 'bullet':
+				var bullet = new Bullet(this.x, this.y, this.rotation);
+				var world = this.displayobject.parent;
+				bullet.index = (this.bullets.length > 0) ? this.bullets.length : 0;
+				this.bullets.push(bullet);
+
+				var callback = (function(){
+					//console.log('callback', this);
+					this.bulletHitBound(bullet);
+				}).bind(this);
+
+				bullet.callback = callback;
+				bullet.event.observe('boundsHit', callback);
+
+				world.addChild(bullet.displayobject);
+				break;
+			}
+		},
+
+		bulletHitBound: function(bullet) {
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].callback);
+			var world = this.displayobject.parent;
+			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
+			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+		},
 	});
 
 	return Player;
 
 })();
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 var World = require('./World.js');
@@ -349,8 +373,8 @@ module.exports = (function(){
 				document.body.requestFullscreen();
 			});
 
-			window.onkeydown = this.keydown;
-			window.onkeyup = this.keyup;
+			window.onkeydown = (this.keydown).bind(this);
+			window.onkeyup = (this.keyup).bind(this);
 		},
 
 		initSocket: function() {
@@ -368,7 +392,7 @@ module.exports = (function(){
 				}
 
 				if(joyStick1["fire"]) {
-					this.attack(1);
+					this.player1.attack(1);
 				}
 
 				//console.log(data);
@@ -458,27 +482,11 @@ module.exports = (function(){
 				}
 			}
 
-			//console.log('p1p: ', this.player1Projectiles);
-
-			for(var j = 0; j < this.player1Projectiles.length; j++) {
-				var collision = false;
-				for (var f = 0; f < this.collisionboxes.length; f++) {
-					if(this.collisionDetection.checkCollision(this.player1Projectiles[j], this.collisionboxes[f])) {
-						collision = true;
-						this.world.container.removeChild(this.player1Projectiles[j].displayobject);
-						this.player1Projectiles.splice(j,1);
-						console.log('de array: ', this.player1Projectiles);
-						break;
-					}
-				}
-				//mag niet meer geupdate worden als er collision is, is al verwijderd uit de array
-				if(!collision)
-				{
-					this.player1Projectiles[j].update();
-				}
+			for(var j = 0; j < this.player1.bullets.length; j++) {
+					this.player1.bullets[j].update(this.collisionboxes);
 			}
 
-			this.player1.update();
+			this.player1.update(this.collisionboxes);
 			this.stage.update();
 		},
 
@@ -490,12 +498,15 @@ module.exports = (function(){
 		},
 
 		keyup: function(event) {
+			if(event.keyCode == 32){
+				//debug
+				this.player1.attack("bullet");
+			}
 			keys[event.keyCode] = false;
 		},
 
 		keydown: function(event) {
 			keys[event.keyCode] = true;
-			console.log(keys[event.keyCode]);
 		},
 	});
 

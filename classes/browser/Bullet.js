@@ -1,17 +1,21 @@
 var Class = require('../core/Class.js');
+var CollisionDetection = require('./CollisionDetection.js');
+var Eventmanager = require('./Eventmanager.js');
 
 module.exports = (function(){
 	
 	var Bullet = Class.extend({
 		init: function(x, y, rotation){
+			this.collisionDetection = new CollisionDetection();
+			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
-			console.log('bulleeet');
 			this.rotation = rotation;
 			this.speed = 5;
 			this.displayobject = new createjs.Container();
 			this.width = 5;
 			this.height = 5;
+			this.index = 0;
 
 			this.displayobject.x = x;
 			this.displayobject.y = y;
@@ -22,7 +26,14 @@ module.exports = (function(){
 			this.displayobject.addChild(bullet);
 		},
 
-		update: function() {
+		update: function(collisionboxes) {
+
+			for (var i= 0; i< collisionboxes.length; i++) {
+				if(this.collisionDetection.checkCollision(this, collisionboxes[i])){
+					this.event.fire("boundsHit");
+				}
+			}
+
 			var directionVector = [];
 			var accelerationVector = [];
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
@@ -33,7 +44,7 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x += accelerationVector["x"];
 			this.y = this.displayobject.y += accelerationVector["y"];
-		}
+		},
 	});
 
 	return Bullet;

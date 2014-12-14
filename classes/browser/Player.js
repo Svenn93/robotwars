@@ -1,5 +1,6 @@
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
+var Bullet = require('./Bullet.js');
 
 module.exports = (function(){
 
@@ -12,6 +13,7 @@ module.exports = (function(){
 			this.rotation = 0;
 			this.velX = 0;
 			this.velY = 0;
+			this.bullets = [];
 
 			this.displayobject = new createjs.Container();
 
@@ -74,19 +76,8 @@ module.exports = (function(){
 		},
 
 		update: function() {
-			/*this.x += this.velX;
-			this.y += this.velY;
 
-			console.log(this.x, this.y);
-
-			this.displayobject.x = this.x;
-			this.displayobject.y = this.y;
-
-			console.log(this.displayobject.x, this.displayobject.y);
-		
-			this.velX *= this.friction;
-			this.velY *= this.friction;*/
-
+			//wanneer de x-waarde wordt aangepast in een collision, displayobject x gelijkzetten
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
@@ -108,11 +99,6 @@ module.exports = (function(){
 			directionVector["x"] = Math.cos(this.rotation * Math.PI/180);
 			directionVector["y"] = Math.sin(this.rotation * Math.PI/180);
 
-			//console.log('direction x: ', directionVector["x"]);
-			//console.log('direction y: ', directionVector["y"]);
-			//console.log('rotation: ', this.rotation);
-
-
 			accelerationVector["x"] = directionVector["x"] * this.speed;
 			accelerationVector["y"] = directionVector["y"] * this.speed;
 
@@ -127,7 +113,35 @@ module.exports = (function(){
 
 			this.x = this.displayobject.x;
 			this.y = this.displayobject.y;
-		}
+		},
+
+		attack: function(type) {
+			switch(type){
+				case 'bullet':
+				var bullet = new Bullet(this.x, this.y, this.rotation);
+				var world = this.displayobject.parent;
+				bullet.index = (this.bullets.length > 0) ? this.bullets.length : 0;
+				this.bullets.push(bullet);
+
+				var callback = (function(){
+					//console.log('callback', this);
+					this.bulletHitBound(bullet);
+				}).bind(this);
+
+				bullet.callback = callback;
+				bullet.event.observe('boundsHit', callback);
+
+				world.addChild(bullet.displayobject);
+				break;
+			}
+		},
+
+		bulletHitBound: function(bullet) {
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].callback);
+			var world = this.displayobject.parent;
+			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
+			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+		},
 	});
 
 	return Player;
