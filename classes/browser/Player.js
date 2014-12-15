@@ -1,11 +1,13 @@
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 var Bullet = require('./Bullet.js');
+var Eventmanager = require('./EventManager.js');
 
 module.exports = (function(){
 
 	var Player = Class.extend({
 		init: function(x, y, friction) {
+			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
 			this.friction = friction;
@@ -14,6 +16,7 @@ module.exports = (function(){
 			this.velX = 0;
 			this.velY = 0;
 			this.bullets = [];
+			this.health = 100;
 
 			this.displayobject = new createjs.Container();
 
@@ -27,7 +30,7 @@ module.exports = (function(){
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
-			this.displayobject.addChild(rect);
+			//this.displayobject.addChild(rect);
 
 			/*this.displayobject.width = this.width = 30;
 			this.displayobject.height = this.height = 30;
@@ -61,18 +64,6 @@ module.exports = (function(){
 			this.displayobject.height = this.height = 80;
 
 			console.log("Sprite: ", this.playerSprite);
-
-    		//this.displayobject.width = this.width = 30;
-    		//this.displayobject.height = this.height = 30;
-
-			//circle = new createjs.Shape();
-    		//circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
-    		//this.displayobject.addChild(circle);
-
-    		//circle2 = new createjs.Shape();
-    		//circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
-    		//this.displayobject.addChild(circle2);
-
 		},
 
 		update: function() {
@@ -118,29 +109,46 @@ module.exports = (function(){
 		attack: function(type) {
 			switch(type){
 				case 'bullet':
-				var bullet = new Bullet(this.x, this.y, this.rotation);
+				var bullet = new Bullet(this.x + 40, this.y + 40, this.rotation);
 				var world = this.displayobject.parent;
 				bullet.index = (this.bullets.length > 0) ? this.bullets.length : 0;
 				this.bullets.push(bullet);
 
 				var callback = (function(){
-					//console.log('callback', this);
 					this.bulletHitBound(bullet);
 				}).bind(this);
 
-				bullet.callback = callback;
-				bullet.event.observe('boundsHit', callback);
+				var callback2 = (function(){
+					this.otherPlayerHit(bullet);
+				}).bind(this);
 
-				world.addChild(bullet.displayobject);
+				bullet.boundHitCallback = callback;
+				bullet.playerHitCallback = callback2;
+				bullet.event.observe('boundsHit', callback);
+				bullet.event.observe('otherPlayerHit', callback2);
+
+				world.addChildAt(bullet.displayobject, world.getChildIndex(this.displayobject));
 				break;
 			}
 		},
 
 		bulletHitBound: function(bullet) {
-			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].callback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('otherPlayerHit', this.bullets[this.bullets.indexOf(bullet)].otherPlayerHitCallback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].boundHitCallback);
 			var world = this.displayobject.parent;
 			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
 			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+		},
+
+		otherPlayerHit: function(bullet) {
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('otherPlayerHit', this.bullets[this.bullets.indexOf(bullet)].otherPlayerHitCallback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].boundHitCallback);
+
+			var world = this.displayobject.parent;
+			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
+			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+
+			this.event.fire('playerHit');
 		},
 	});
 

@@ -26,12 +26,17 @@ module.exports = (function(){
 			this.displayobject.addChild(bullet);
 		},
 
-		update: function(collisionboxes) {
+		update: function(collisionboxes, otherPlayer) {
+
 
 			for (var i= 0; i< collisionboxes.length; i++) {
 				if(this.collisionDetection.checkCollision(this, collisionboxes[i])){
 					this.event.fire("boundsHit");
 				}
+			}
+
+			if(this.collisionDetection.checkCollision(this, otherPlayer)){
+				this.event.fire("otherPlayerHit");
 			}
 
 			var directionVector = [];

@@ -112,6 +112,7 @@ module.exports = (function(){
 			this.boxes = this.map.boxes;
 
 			this.player1 = new Player(this.spawnX1, this.spawnY1, this.world.friction);
+			this.player1.event.observe('playerHit', (this.player1HitPlayer).bind(this));
 			this.world.container.addChild(this.player1.displayobject);
 
 			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
@@ -138,20 +139,22 @@ module.exports = (function(){
 					console.log("colission");
 					this.player1.speed = 0;
 				}
+
+				if(this.collisionDetection.checkCollision(this.player2, this.collisionboxes[i])) {
+					this.player2.speed = 0;
+				}
 			}
+			//PLAYER 1
 
 			if(keys[37] || joyStick1["left"]){
-				//this.player.velX--;
 				this.player1.rotation -= 2;
 			}
 
 			if(keys[39] || joyStick1["right"]) {
-				//this.player.velX++;
 				this.player1.rotation += 2;
 			}
 
 			if(keys[38] || joyStick1["up"]) {
-				//this.player.velY--;
 				if(this.player1.speed < 3)
 				{
 					this.player1.speed ++;
@@ -159,18 +162,42 @@ module.exports = (function(){
 			}
 
 			if(keys[40] || joyStick1["down"]) {
-				this.player1.velY++;
 				if(this.player1.speed > -3)
 				{
 					this.player1.speed --;
 				}
 			}
 
-			for(var j = 0; j < this.player1.bullets.length; j++) {
-					this.player1.bullets[j].update(this.collisionboxes);
+			//PLAYER 2
+			if(keys[81] || joyStick1["left"]){
+				this.player2.rotation -= 2;
 			}
 
-			this.player1.update(this.collisionboxes);
+			if(keys[68] || joyStick1["right"]) {
+				this.player2.rotation += 2;
+			}
+
+			if(keys[90] || joyStick1["up"]) {
+				if(this.player2.speed < 3)
+				{
+					this.player2.speed ++;
+				}
+			}
+
+			if(keys[83] || joyStick1["down"]) {
+				if(this.player2.speed > -3)
+				{
+					this.player2.speed --;
+				}
+			}
+
+
+			for(var j = 0; j < this.player1.bullets.length; j++) {
+					this.player1.bullets[j].update(this.collisionboxes, this.player2);
+			}
+
+			this.player1.update();
+			this.player2.update();
 			this.stage.update();
 		},
 
@@ -190,7 +217,14 @@ module.exports = (function(){
 		},
 
 		keydown: function(event) {
+			console.log(event.keyCode);
 			keys[event.keyCode] = true;
+		},
+
+		player1HitPlayer: function() {
+			console.log('[RobotWars] player1 hit other player', this.player2);
+			this.player2.health -= 1;
+			console.log(this.player2.health);
 		},
 	});
 

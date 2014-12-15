@@ -48,12 +48,17 @@ module.exports = (function(){
 			this.displayobject.addChild(bullet);
 		},
 
-		update: function(collisionboxes) {
+		update: function(collisionboxes, otherPlayer) {
+
 
 			for (var i= 0; i< collisionboxes.length; i++) {
 				if(this.collisionDetection.checkCollision(this, collisionboxes[i])){
 					this.event.fire("boundsHit");
 				}
+			}
+
+			if(this.collisionDetection.checkCollision(this, otherPlayer)){
+				this.event.fire("otherPlayerHit");
 			}
 
 			var directionVector = [];
@@ -121,7 +126,7 @@ module.exports = (function(){
 	return CollisionDetection;
 
 })();
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
 module.exports = (function(){
@@ -163,15 +168,19 @@ module.exports = (function(){
 	return Eventmanager;
 
 })();
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js":[function(require,module,exports){
+module.exports=require("/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js")
+},{"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 var Bullet = require('./Bullet.js');
+var Eventmanager = require('./EventManager.js');
 
 module.exports = (function(){
 
 	var Player = Class.extend({
 		init: function(x, y, friction) {
+			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
 			this.friction = friction;
@@ -180,6 +189,7 @@ module.exports = (function(){
 			this.velX = 0;
 			this.velY = 0;
 			this.bullets = [];
+			this.health = 100;
 
 			this.displayobject = new createjs.Container();
 
@@ -193,7 +203,7 @@ module.exports = (function(){
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
-			this.displayobject.addChild(rect);
+			//this.displayobject.addChild(rect);
 
 			/*this.displayobject.width = this.width = 30;
 			this.displayobject.height = this.height = 30;
@@ -227,18 +237,6 @@ module.exports = (function(){
 			this.displayobject.height = this.height = 80;
 
 			console.log("Sprite: ", this.playerSprite);
-
-    		//this.displayobject.width = this.width = 30;
-    		//this.displayobject.height = this.height = 30;
-
-			//circle = new createjs.Shape();
-    		//circle.graphics.beginFill("blue").drawCircle(0, 0, 15);
-    		//this.displayobject.addChild(circle);
-
-    		//circle2 = new createjs.Shape();
-    		//circle2.graphics.beginFill("yellow").drawCircle(10, 0, 3);
-    		//this.displayobject.addChild(circle2);
-
 		},
 
 		update: function() {
@@ -284,36 +282,53 @@ module.exports = (function(){
 		attack: function(type) {
 			switch(type){
 				case 'bullet':
-				var bullet = new Bullet(this.x, this.y, this.rotation);
+				var bullet = new Bullet(this.x + 40, this.y + 40, this.rotation);
 				var world = this.displayobject.parent;
 				bullet.index = (this.bullets.length > 0) ? this.bullets.length : 0;
 				this.bullets.push(bullet);
 
 				var callback = (function(){
-					//console.log('callback', this);
 					this.bulletHitBound(bullet);
 				}).bind(this);
 
-				bullet.callback = callback;
-				bullet.event.observe('boundsHit', callback);
+				var callback2 = (function(){
+					this.otherPlayerHit(bullet);
+				}).bind(this);
 
-				world.addChild(bullet.displayobject);
+				bullet.boundHitCallback = callback;
+				bullet.playerHitCallback = callback2;
+				bullet.event.observe('boundsHit', callback);
+				bullet.event.observe('otherPlayerHit', callback2);
+
+				world.addChildAt(bullet.displayobject, world.getChildIndex(this.displayobject));
 				break;
 			}
 		},
 
 		bulletHitBound: function(bullet) {
-			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].callback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('otherPlayerHit', this.bullets[this.bullets.indexOf(bullet)].otherPlayerHitCallback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].boundHitCallback);
 			var world = this.displayobject.parent;
 			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
 			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+		},
+
+		otherPlayerHit: function(bullet) {
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('otherPlayerHit', this.bullets[this.bullets.indexOf(bullet)].otherPlayerHitCallback);
+			this.bullets[this.bullets.indexOf(bullet)].event.stopObserving('boundsHit', this.bullets[this.bullets.indexOf(bullet)].boundHitCallback);
+
+			var world = this.displayobject.parent;
+			world.removeChild(this.bullets[this.bullets.indexOf(bullet)].displayobject);
+			this.bullets.splice(this.bullets.indexOf(bullet), 1);
+
+			this.event.fire('playerHit');
 		},
 	});
 
 	return Player;
 
 })();
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js","./EventManager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 var World = require('./World.js');
@@ -428,6 +443,7 @@ module.exports = (function(){
 			this.boxes = this.map.boxes;
 
 			this.player1 = new Player(this.spawnX1, this.spawnY1, this.world.friction);
+			this.player1.event.observe('playerHit', (this.player1HitPlayer).bind(this));
 			this.world.container.addChild(this.player1.displayobject);
 
 			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
@@ -454,20 +470,22 @@ module.exports = (function(){
 					console.log("colission");
 					this.player1.speed = 0;
 				}
+
+				if(this.collisionDetection.checkCollision(this.player2, this.collisionboxes[i])) {
+					this.player2.speed = 0;
+				}
 			}
+			//PLAYER 1
 
 			if(keys[37] || joyStick1["left"]){
-				//this.player.velX--;
 				this.player1.rotation -= 2;
 			}
 
 			if(keys[39] || joyStick1["right"]) {
-				//this.player.velX++;
 				this.player1.rotation += 2;
 			}
 
 			if(keys[38] || joyStick1["up"]) {
-				//this.player.velY--;
 				if(this.player1.speed < 3)
 				{
 					this.player1.speed ++;
@@ -475,18 +493,42 @@ module.exports = (function(){
 			}
 
 			if(keys[40] || joyStick1["down"]) {
-				this.player1.velY++;
 				if(this.player1.speed > -3)
 				{
 					this.player1.speed --;
 				}
 			}
 
-			for(var j = 0; j < this.player1.bullets.length; j++) {
-					this.player1.bullets[j].update(this.collisionboxes);
+			//PLAYER 2
+			if(keys[81] || joyStick1["left"]){
+				this.player2.rotation -= 2;
 			}
 
-			this.player1.update(this.collisionboxes);
+			if(keys[68] || joyStick1["right"]) {
+				this.player2.rotation += 2;
+			}
+
+			if(keys[90] || joyStick1["up"]) {
+				if(this.player2.speed < 3)
+				{
+					this.player2.speed ++;
+				}
+			}
+
+			if(keys[83] || joyStick1["down"]) {
+				if(this.player2.speed > -3)
+				{
+					this.player2.speed --;
+				}
+			}
+
+
+			for(var j = 0; j < this.player1.bullets.length; j++) {
+					this.player1.bullets[j].update(this.collisionboxes, this.player2);
+			}
+
+			this.player1.update();
+			this.player2.update();
 			this.stage.update();
 		},
 
@@ -506,7 +548,14 @@ module.exports = (function(){
 		},
 
 		keydown: function(event) {
+			console.log(event.keyCode);
 			keys[event.keyCode] = true;
+		},
+
+		player1HitPlayer: function() {
+			console.log('[RobotWars] player1 hit other player', this.player2);
+			this.player2.health -= 1;
+			console.log(this.player2.health);
 		},
 	});
 
