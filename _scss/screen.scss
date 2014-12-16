@@ -2,10 +2,229 @@
 
 canvas{
    width: 1350px;
-   height: 690px;
+   height: 890px;
    position: relative;
    display: inline;
    
+}
+
+#logo {
+	margin-top: 30px;
+	margin-bottom: 15px;
+}
+
+.logo-groot {
+	margin-top: 100px;
+	transition: margin-top 1s, transform 1s;
+}
+
+.logo-scale {
+	-moz-transform: scale(0.5); 
+	-o-transform: scale(0.5);
+	-webkit-transform: scale(0.5);
+	transform: scale(0.5);
+
+	margin-top: 60px;
+}
+
+.versus {
+	font-size: 4em;
+	position: absolute;
+	top: 413px;
+	text-align: center;
+	width: 100%;
+}
+
+.wait {
+	display: none;
+}
+
+.player2wait {
+	display: block;
+	position: absolute;
+	left: 858px;
+	top: 130px;
+	font-size: 2.3em;
+}
+
+.player1wait {
+	display: block;
+	position: absolute;
+	left: 100px;
+	top: 130px;
+	font-size: 2.3em;
+}
+
+
+
+#choosebody, #chooselongdistanceweapon {
+	position: relative;
+	text-align:left;
+	transition: all 1s;
+	width: 1210px;
+	margin-left: auto;
+	margin-right: auto;
+
+	img {
+		display: block;
+	}
+	
+	.player1 {
+		position: relative;
+		float:left;
+	}
+
+	.player2 {
+		position: relative;
+		float:right;
+	}
+
+	.player1, .player2{
+		text-align: center;
+
+		.selection {
+			display: none;
+		}
+
+		.selection0 {
+			position: absolute;
+			display: block;
+			top: 0px;
+		}
+
+		.selection1 {
+			position: absolute;
+			display: block;
+			top: 106px;
+			left: 106px;
+		}
+
+		.selection2 {
+			position: absolute;
+			display: block;
+			top: 0px;
+			left: 212px;
+		}
+
+		h1{
+			font-size: 3em;
+			text-transform: uppercase;
+			margin-top: 50px;
+			margin-bottom: 50px;
+		}
+
+		ul{
+			text-align: left;
+			margin-left: 145px;
+			li{
+				margin-bottom: 12px;
+				div{
+					margin-top: 9px;
+				}
+			}
+		}
+
+		.snelheid img, .sterkte img {
+			display: inline-block;
+			margin-right: 5px;
+		}
+
+		.herlaadsnelheid img, .kracht img {
+			display: inline-block;
+			margin-right: 5px;
+		}
+	}
+}
+
+#choices {
+	margin-top: -60px;
+	position: relative;
+	text-align:left;
+	transition: all 1s;
+	width: 1210px;
+	margin-left: auto;
+	margin-right: auto;
+
+	img.choices {
+		margin-left: 95px;
+		margin-bottom: 20px;
+	}
+
+	.player1 {
+		position: relative;
+		float:left;
+
+		.indicatorstep1 {
+			left: 165px;
+		}
+
+		.robot {
+			left: 168px;
+		}
+	}
+
+	.player2 {
+		position: relative;
+		float:right;
+
+		img.choices {
+			margin-left: 0px;
+			margin-right: 95px;
+		}
+
+		.indicatorstep1{
+			left: 70px;
+		}
+
+		.indicatorstep2 {
+			left: 
+		}
+
+		.robot {
+			left: 73px;
+		}
+	}
+
+	.player1, .player2{
+		text-align: center;
+
+		.indicatorstep1, .indicatorstep2{
+			position: absolute;
+			-moz-animation: fade 1.5s;
+			-o-animation: fade 1.5s;
+			-webkit-animation: fade 1.5s;
+			animation: fade 1.5s;
+			animation-iteration-count: infinite;
+			-moz-animation-iteration-count: infinite;
+			-webkit-animation-iteration-count: infinite;
+			-o-animation-iteration-count: infinite;
+		}
+
+		.indicatorstep2 {
+			display: none;
+		}
+
+		.robot {
+			position: absolute;
+			top: 2px;
+			width: 96px;
+			height: 96px;
+			display: none;
+		}
+
+	}
+}
+
+#splash {
+
+	p:nth-child(1){
+		margin-top: 419px;
+		font-size: 1.2em;
+	}
+
+	p:nth-child(3) {
+		margin-top: 50px;
+	}
 }
 
 html{
@@ -18,5 +237,23 @@ body{
 	height: 100%;
 	width: 100%;
 	background-color: black;
-	border: 16px yellow solid;
+	border-width: 16px;
+	border-style: solid;
+	-webkit-border-image:url(../images/border-img.png) 15 15 round; /* Safari 3.1-5 */
+    -o-border-image:url(../images/border-img.png) 15 15 round; /* Opera 11-12.1 */
+    -moz-border-image:url(../images/border-img.png) 15 15 round;
+    border-image:url(../images/border-img.png) 15 15 round;
 }
+
+.clearfix:after {
+   content: " "; /* Older browser do not support empty content */
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+
+@keyframes fade {
+0%   {opacity:0;}
+50%   {opacity:0.3;}
+100% {opacity:0;}}

@@ -1,6 +1,306 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"./_js/app.js":[function(require,module,exports){
 var RobotWars = require('../classes/browser/RobotWars.js');
-new RobotWars($('#cnvs'));
+var step="splash";
+var socket = "";
+var socketid = "";
+var joystick = {};
+var selectedrobot1 = 0;
+var selectedrobot2 = 0;
+var selectedLRweapon1 = 0;
+
+var robots = [
+	["crowby", 3, 4],
+	["crank", 2, 5],
+	["spud",5, 2]
+]
+
+var longweapons = [
+	["s-34", 4, 2],
+	["kx-93", 2, 5],
+	["kg-43", 3, 3]
+]
+
+window.onkeydown = keyDownHandler;
+
+document.fullscreenEnabled = document.fullscreenEnabled || 
+ 							 document.webkitFullscreenEnabled || 
+ 							 document.mozFullScreenEnabled ||
+ 							 document.msFullscreenEnabled;
+
+document.body.requestFullscreen = document.body.requestFullscreen || 
+								  document.body.webkitRequestFullscreen || 
+							 	  document.body.mozRequestFullscreen || 
+							 	  document.body.msRequestFullscreen;
+
+$('body').on('click', function(e){
+	document.body.requestFullscreen();
+});
+
+
+function init() {
+	initSocket();
+	$('#game').hide();
+	$('#choosebody').hide();
+	$('#choices').hide();
+	$('.versus').hide();
+	$('#chooselongdistanceweapon').hide();
+}
+
+function initSocket() {
+	socket = io('/');
+
+	socket.on('socketid', function(data){
+		socketid = data;
+	});
+
+	socket.on('userinput', function(data){
+		for (var key in data){
+			joyStick1[key] = data[key];
+		}
+	});
+}
+
+function keyDownHandler(event) {
+	switch(event.keyCode)
+	{
+		case 32:
+				spacePressed();
+			break;
+		case 37: 
+				leftPressed();
+			break;
+		case 39:
+				rightPressed();
+			break; 
+	}
+}
+
+function spacePressed() {
+	switch(step) {
+		case "splash": 
+			step = "chooseBodyP1";
+			chooseBody();
+		break;
+		case "chooseBodyP1":
+			step = "chooseBodyP2"; 
+			$("#choices .player1 ." + robots[selectedrobot1][0]).css('display', 'block');
+			setTimeout(function(){
+				chooseBody();
+			}, 2000);
+		break;
+		case "chooseBodyP2":
+			step = "chooseLongDistanceWeaponsP1"; 
+			$("#choices .player2 ." + robots[selectedrobot2][0]).css('display', 'block');
+			setTimeout(function(){
+				chooseLongDistanceWeapons();
+			}, 2000);
+		break;
+		case "chooseLongDistanceWeaponsP1":
+			step = "chooseLongDistanceWeaponsP2";
+	}
+}
+
+function leftPressed() {
+	if(step === "chooseBodyP1")
+	{
+		if(selectedrobot1 > 0)
+		{
+			selectedrobot1 -=1;
+			setSelection();
+		}
+	}
+
+	if(step === "chooseBodyP2")
+	{
+		if(selectedrobot2 > 0)
+		{
+			selectedrobot2 -=1;
+			setSelection();
+		}
+	}
+
+	if(step === "chooseLongDistanceWeaponsP1")
+	{
+		if(selectedLRweapon1 > 0)
+		{
+			selectedLRweapon1 -=1;
+			setSelection();
+		}
+	}
+}
+
+function rightPressed() {
+	if(step === "chooseBodyP1")
+	{
+		if(selectedrobot1 < 3)
+		{
+			selectedrobot1 +=1;
+			setSelection();
+		}
+	}
+
+	if(step === "chooseBodyP2")
+	{
+		if(selectedrobot2 < 3)
+		{
+			selectedrobot2 +=1;
+			setSelection();
+		}
+	}
+
+	if(step === "chooseLongDistanceWeaponsP1")
+	{
+		if(selectedLRweapon1 < 3)
+		{
+			selectedLRweapon1 +=1;
+			setSelection();
+		}
+	}
+}
+
+function setSelection() {
+	/******BEGIN VAN DE BODY*******/
+	if(step === "chooseBodyP1") {
+			switch(selectedrobot1) {
+			case 0: $('#choosebody .player1 .selection').removeClass().addClass('selection0').addClass('selection');
+				break;
+			case 1: $('#choosebody .player1 .selection').removeClass().addClass('selection1').addClass('selection');
+				break;
+			case 2: $('#choosebody .player1 .selection').removeClass().addClass('selection2').addClass('selection');
+				break;
+		}
+
+		$('#choosebody .player1 h1').html(robots[selectedrobot1][0]);
+		$('#choosebody .player1 .snelheid').html('');
+		$('#choosebody .player1 .sterkte').html('');
+		for(var i= 1; i<=5; i++) {
+			if(i<= robots[selectedrobot1][1]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#choosebody .player1 .snelheid').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#choosebody .player1 .snelheid').append(img);
+			}
+
+			if(i<= robots[selectedrobot1][2]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#choosebody .player1 .sterkte').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#choosebody .player1 .sterkte').append(img);
+			}
+		}
+	}
+
+	if(step === "chooseBodyP2") {
+			switch(selectedrobot2) {
+			case 0: $('#choosebody .player2 .selection').removeClass().addClass('selection0').addClass('selection');
+				break;
+			case 1: $('#choosebody .player2 .selection').removeClass().addClass('selection1').addClass('selection');
+				break;
+			case 2: $('#choosebody .player2 .selection').removeClass().addClass('selection2').addClass('selection');
+				break;
+		}
+
+		$('#choosebody .player2 h1').html(robots[selectedrobot2][0]);
+		$('#choosebody .player2 .snelheid').html('');
+		$('#choosebody .player2 .sterkte').html('');
+		for(var i= 1; i<=5; i++) {
+			if(i<= robots[selectedrobot2][1]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#choosebody .player2 .snelheid').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#choosebody .player2 .snelheid').append(img);
+			}
+
+			if(i<= robots[selectedrobot2][2]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#choosebody .player2 .sterkte').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#choosebody .player2 .sterkte').append(img);
+			}
+		}
+	}
+
+	/*******END VAN DE BODIES **********/
+
+	/*******BEGIN LONG DISTANCE WEAPON ********/
+	if(step === "chooseLongDistanceWeaponsP1") {
+			switch(selectedLRweapon1) {
+			case 0: $('#chooselongdistanceweapon .player1 .selection').removeClass().addClass('selection0').addClass('selection');
+				break;
+			case 1: $('#chooselongdistanceweapon .player1 .selection').removeClass().addClass('selection1').addClass('selection');
+				break;
+			case 2: $('#chooselongdistanceweapon .player1 .selection').removeClass().addClass('selection2').addClass('selection');
+				break;
+		}
+
+		$('#chooselongdistanceweapon .player1 h1').html(longweapons[selectedLRweapon1][0]);
+		$('#chooselongdistanceweapon .player1 .herlaadsnelheid').html('');
+		$('#chooselongdistanceweapon .player1 .kracht').html('');
+		for(var i= 1; i<=5; i++) {
+			if(i<= longweapons[selectedLRweapon1][1]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#chooselongdistanceweapon .player1 .herlaadsnelheid').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#chooselongdistanceweapon .player1 .herlaadsnelheid').append(img);
+			}
+
+			if(i<= longweapons[selectedLRweapon1][2]){
+				var img = $("<img src='images/staticon_filled.png' />");
+				$('#chooselongdistanceweapon .player1 .kracht').append(img);
+			}else {
+				var img = $("<img src='images/staticon.png' />");
+				$('#chooselongdistanceweapon .player1 .kracht').append(img);
+			}
+		}
+	}
+}
+
+function chooseBody() {
+	console.log('CHOOSE BODY: ', robots);
+	$('.logo-groot').addClass('logo-scale');
+	$('#splash').hide();
+	$('#choosebody').show();
+	$('#choices').show();
+	$('.versus').show();
+
+	if(step === "chooseBodyP1")
+	{
+		$('.player2').css('opacity', 0.1);
+		$('.wait').removeClass().addClass('player2wait').addClass('wait');
+		setSelection();
+	}
+
+	if(step === "chooseBodyP2")
+	{
+		$('#choosebody .player1').css('opacity', 0.1);
+		$('.player2').css('opacity', 1);
+		$('.wait').removeClass().addClass('player1wait').addClass('wait');
+		setSelection();
+	}
+}
+
+function chooseLongDistanceWeapons() {
+	$("#choices .indicatorstep1").hide();
+	$("#choices .indicatorstep2").css('display', 'block');
+	$('#choosebody').hide();
+	$('#chooselongdistanceweapon').show();
+
+	if(step === "chooseLongDistanceWeaponsP1")
+	{
+		$('#chooselongdistanceweapon .player2').css('opacity', 0.1);
+		$('.wait').removeClass().addClass('player2wait').addClass('wait');
+		setSelection();
+	}
+}
+
+init();
+
+//new RobotWars($('#cnvs'));
 },{"../classes/browser/RobotWars.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/RobotWars.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js":[function(require,module,exports){
 var Class = require('../core/Class.js');
 
@@ -86,7 +386,7 @@ module.exports = (function(){
 
 		},
 
-		checkCollision: function(shapeA, shapeB){
+		checkCollision: function(shapeA, shapeB) {
 			var vX = (shapeA.x + (shapeA.width/2)) - (shapeB.x + (shapeB.width/2));
 			var vY = (shapeA.y + (shapeA.height/2)) - (shapeB.y + (shapeB.height/2));
 			var hWidths = (shapeA.width/2) + (shapeB.width/2);
@@ -114,6 +414,47 @@ module.exports = (function(){
 						shapeA.x += oX;
 					}else {
 						shapeA.x -= oX;
+					}
+					return true;
+				}
+			}
+
+			return false;
+		},
+
+		checkPlayerCollision: function(shapeA, shapeB) {
+			var vX = (shapeA.x + (shapeA.width/2)) - (shapeB.x + (shapeB.width/2));
+			var vY = (shapeA.y + (shapeA.height/2)) - (shapeB.y + (shapeB.height/2));
+			var hWidths = (shapeA.width/2) + (shapeB.width/2);
+			var hHeights = (shapeA.height/2) + (shapeB.height/2);
+
+			if(Math.abs(vX) < hWidths && Math.abs(vY) < hHeights) {
+				var oX = hWidths - Math.abs(vX);
+				var oY = hHeights - Math.abs(vY);
+
+				//console.log('ShapeA: ', shapeA, 'ShapeB: ', shapeB);
+
+				if(oX >= oY )
+				{ 
+					if(vY > 0) {
+						shapeA.y += oY;
+						shapeB.y -= oY;
+
+					}else {
+						shapeA.y -= oY;
+						shapeB.y += oY;
+					}
+					return true;
+
+				}else {
+
+					if(vX > 0) {
+						shapeA.x += oX;
+						shapeB.x -= oX;
+
+					}else {
+						shapeA.x -= oX;
+						shapeB.x += oX;
 					}
 					return true;
 				}
@@ -170,7 +511,72 @@ module.exports = (function(){
 })();
 },{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js":[function(require,module,exports){
 module.exports=require("/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js")
-},{"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
+},{"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/EventManager.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Healthbar.js":[function(require,module,exports){
+/*globals createjs:true*/
+var Class = require('../core/Class.js');
+
+module.exports = (function(){
+
+	var Healthbar = Class.extend({
+		init: function(x, y, plaatsing, text) {
+			this.x = x;
+			this.y = y;
+			this.health = 100;
+			this.plaatsing = plaatsing;
+			this.text = new createjs.Text(text, "20px Arial", "white");
+
+			this.displayobject = new createjs.Container();
+			this.displayobject.addChild(this.text);
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
+
+			this.healthbar = new createjs.Container();
+			this.healthbar.y = 25;
+			this.displayobject.addChild(this.healthbar);
+			this.loadGraphics();
+		},
+
+		loadGraphics: function() {
+			if(this.healthbar.getNumChildren() > 0) {
+				this.healthbar.removeAllChildren();
+			}
+			var offset = 0;
+			var aantalgekleurd = Math.round(this.health/4);
+			console.log('aantal gekleurd: ', aantalgekleurd);
+			for(var i= 1; i<= 25; i++)
+			{
+				var blokje = new createjs.Shape();
+				var stroke = new createjs.Shape();
+				blokje.graphics.beginFill("red").drawRoundRect(0, 0, 10, 32, 3);
+				stroke.graphics.beginStroke("red").drawRoundRect(0, 0, 10, 32, 3);
+
+				if(this.plaatsing === "links"){
+					if(i<=aantalgekleurd){
+						blokje.alpha = 1;
+					}else{
+						blokje.alpha = 0.1;
+					}
+				}else {
+					if(i<= 25-aantalgekleurd){
+						blokje.alpha = 0.1;
+					}else{
+						blokje.alpha = 1;
+					}
+				}
+				
+				stroke.x = offset;
+				blokje.x = offset;
+				this.healthbar.addChild(blokje);
+				this.healthbar.addChild(stroke);
+				offset += 16;
+			}
+		},
+	});
+
+	return Healthbar;
+
+})();
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 var Bullet = require('./Bullet.js');
@@ -203,17 +609,9 @@ module.exports = (function(){
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
-			//this.displayobject.addChild(rect);
-
-			/*this.displayobject.width = this.width = 30;
-			this.displayobject.height = this.height = 30;
-			this.displayobject.rotation = this.rotation;*/
 
 			this.displayobject.regX = 0;
 			this.displayobject.regY = 0;
-
-			/*console.log("this: ", this);
-			console.log("Bounds: ", this.displayobject.getBounds());*/
 
 			var spritesheet = new createjs.SpriteSheet({
 				"images":["../images/robot.png"],
@@ -241,15 +639,10 @@ module.exports = (function(){
 
 		update: function() {
 
-			//wanneer de x-waarde wordt aangepast in een collision, displayobject x gelijkzetten
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
 			this.speed *= this.friction;
-			if(this.speed < 0.1)
-			{
-				this.speed = 0;
-			}
 
 			if(this.rotation <= 0 && this.rotation >= -2)
 			{
@@ -266,11 +659,7 @@ module.exports = (function(){
 			accelerationVector["x"] = directionVector["x"] * this.speed;
 			accelerationVector["y"] = directionVector["y"] * this.speed;
 
-			//console.log("speed: ", this.speed, "accVector x: ", accelerationVector["x"], "accVector y: ", accelerationVector["y"]);
-
 			this.playerSprite.rotation = this.rotation;
-
-			//console.log("heading: ", this.rotation, " and rotation: ", this.displayobject.rotation);
 
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
@@ -337,6 +726,8 @@ var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 var CollisionDetection = require('./CollisionDetection.js');
 var Bullet = require('./Bullet.js');
+var Healthbar = require('./Healthbar.js');
+var TimeIndicator = require('./TimeIndicator.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -373,20 +764,6 @@ module.exports = (function(){
             shape1.graphics.drawCircle(200,200,200);
 
 			this.stage.addChild(this.world.container);
-			
-			document.fullscreenEnabled = document.fullscreenEnabled || 
-			 							 document.webkitFullscreenEnabled || 
-			 							 document.mozFullScreenEnabled ||
-			 							 document.msFullscreenEnabled;
-
-			document.body.requestFullscreen = this.$el[0].requestFullscreen || 
-										 this.$el[0].webkitRequestFullscreen || 
-										 this.$el[0].mozRequestFullscreen || 
-										 this.$el[0].msRequestFullscreen;
-
-			this.$el.on('click', function(e){
-				document.body.requestFullscreen();
-			});
 
 			window.onkeydown = (this.keydown).bind(this);
 			window.onkeyup = (this.keyup).bind(this);
@@ -447,11 +824,24 @@ module.exports = (function(){
 			this.world.container.addChild(this.player1.displayobject);
 
 			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
+			this.player2.event.observe('playerHit', (this.player2HitPlayer).bind(this));
 			this.world.container.addChild(this.player2.displayobject);
+
+			this.healthbar1 = new Healthbar(0, 700, "links", "player 1");
+			this.world.container.addChild(this.healthbar1.displayobject);
+
+			this.healthbar2 = new Healthbar(950, 700, "rechts", "player 2");
+			this.world.container.addChild(this.healthbar2.displayobject);
+
+			this.timeindicator = new TimeIndicator(575, 700);
+			this.world.container.addChild(this.timeindicator.displayobject);
 
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');
-			this.ticker.addEventListener('tick', this.update.bind(this));
+			this.fn = this.update.bind(this);
+			this.ticker.addEventListener('tick', this.fn);
+
+			this.interval = setInterval((this.countdown).bind(this), 1000);
 		},
 
 		attack: function(player) {
@@ -475,6 +865,12 @@ module.exports = (function(){
 					this.player2.speed = 0;
 				}
 			}
+
+			if(this.collisionDetection.checkPlayerCollision(this.player1, this.player2)){
+				this.player1.speed = 0;
+				this.player2.speed = 0;
+			}
+
 			//PLAYER 1
 
 			if(keys[37] || joyStick1["left"]){
@@ -522,13 +918,17 @@ module.exports = (function(){
 				}
 			}
 
-
 			for(var j = 0; j < this.player1.bullets.length; j++) {
 					this.player1.bullets[j].update(this.collisionboxes, this.player2);
 			}
 
+			for(var k = 0; k < this.player2.bullets.length; k++) {
+					this.player2.bullets[k].update(this.collisionboxes, this.player1);
+			}
+
 			this.player1.update();
 			this.player2.update();
+			this.timeindicator.update();
 			this.stage.update();
 		},
 
@@ -544,18 +944,44 @@ module.exports = (function(){
 				//debug
 				this.player1.attack("bullet");
 			}
+
+			if(event.keyCode == 16) {
+				this.player2.attack("bullet");
+			}
 			keys[event.keyCode] = false;
 		},
 
 		keydown: function(event) {
-			console.log(event.keyCode);
+			//console.log(event.keyCode);
 			keys[event.keyCode] = true;
 		},
 
 		player1HitPlayer: function() {
-			console.log('[RobotWars] player1 hit other player', this.player2);
 			this.player2.health -= 1;
+			this.healthbar2.health = this.player2.health;
+			this.healthbar2.loadGraphics();
 			console.log(this.player2.health);
+		},
+
+		player2HitPlayer: function() {
+			this.player1.health -= 1;
+			this.healthbar1.health = this.player1.health;
+			this.healthbar1.loadGraphics();
+			console.log(this.player1.health);
+		},
+
+		countdown: function() {
+			if(this.timeindicator.seconds > 0) {
+				this.timeindicator.seconds -=1; 
+			}else {
+				clearInterval(this.interval);
+				this.endGame();
+			}
+		},
+
+		endGame: function() {
+			console.log('END GAME');
+			this.ticker.removeEventListener('tick', this.fn);
 		},
 	});
 
@@ -563,7 +989,7 @@ module.exports = (function(){
 
 })();
 
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Bound.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bound.js","./Bullet.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Bullet.js","./CollisionDetection.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/CollisionDetection.js","./Healthbar.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Healthbar.js","./Player.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Player.js","./TileMap.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TileMap.js","./TimeIndicator.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/TimeIndicator.js","./World.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 
@@ -697,7 +1123,61 @@ module.exports = (function(){
 
 })();
 
-},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Eventmanager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js","./Tile.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js":[function(require,module,exports){
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js","./Eventmanager.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Eventmanager.js","./Tile.js":"/Applications/MAMP/htdocs/EXD/game/classes/browser/Tile.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/TimeIndicator.js":[function(require,module,exports){
+/*globals createjs:true*/
+var Class = require('../core/Class.js');
+
+module.exports = (function(){
+
+	var TimeIndicator = Class.extend({
+		init: function(x, y) {
+			this.x = x;
+			this.y = y;
+			this.seconds = 180;
+
+			this.xmlurl = "../font/font.xml";
+
+			this.displayobject = new createjs.Container();
+			this.displayobject.x = this.x;
+			this.displayobject.y = this.y;
+
+			$.ajax({
+		        type: "get",
+		        url: this.xmlurl,
+		        dataType: "xml",
+		        context: this,
+		        success: (function(data) {
+		            /* handle data here */
+		           this.bitmapfont = new BitmapFont("../font/font.png", data, 32);
+		           BitmapTextField.registerBitmapFont(this.bitmapfont,"scorefont");
+		           this.bitmapText = new BitmapTextField(200,100,"00","scorefont",-1,0,0,"left","top",true);
+    			   this.displayobject.addChild(this.bitmapText);
+		        }).bind(this)
+		    });
+		},
+
+		update: function() {
+			this.displayobject.removeChild(this.bitmapText);
+			var minutes = Math.floor(this.seconds / 60);
+			var seconds = this.seconds - minutes * 60;
+			if(seconds === 0)
+			{
+				seconds = "00";
+			}
+
+			if((seconds <= 9) && seconds != 0)
+			{
+				seconds = "0" + seconds;
+			}
+			this.bitmapText = new BitmapTextField(200,100,minutes + ":" + seconds,"scorefont",-1,5,0,"left","top",true);
+			this.displayobject.addChild(this.bitmapText);
+		},
+	});
+
+	return TimeIndicator;
+
+})();
+},{"../core/Class.js":"/Applications/MAMP/htdocs/EXD/game/classes/core/Class.js"}],"/Applications/MAMP/htdocs/EXD/game/classes/browser/World.js":[function(require,module,exports){
 /*globals createjs:true*/
 var Class = require('../core/Class.js');
 

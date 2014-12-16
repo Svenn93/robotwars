@@ -4,6 +4,17 @@
 //vars
 
 //font-face
+@font-face {
+  font-family: 'Press Start K';
+  src: url('../font/prstartk.eot'); /* IE9 Compat Modes */
+  src: url('../font/prstartk.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+       url('../font/prstartk.woff') format('woff'), /* Modern Browsers */
+       url('../font/prstartk.ttf')  format('truetype'), /* Safari, Android, iOS */
+       url('../font/prstartk.svg#a1dea88eaf5b3dfc5c740a66debd0af1') format('svg'); /* Legacy iOS */
+       
+  font-style:   normal;
+  font-weight:  400;
+}
 
 html {
 	font-size: 62.5%;
@@ -11,7 +22,8 @@ html {
 
 body {
 	font-size: 1em;
-	font-family: Roboto, Arial;
+	font-family: "Press Start K", Arial;
+	color: #fff;
 }
 
 @include border-box-default;

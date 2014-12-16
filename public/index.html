@@ -6,10 +6,94 @@
 	<link rel="stylesheet" href="/css/screen.css" media="screen" type="text/css" />
 </head>
 <body>
-		<canvas id="cnvs" width="1350" height="690">&nbsp;</canvas>
+	<img class="logo-groot" src="images/logo_groot.png" alt="" />
+	<p class="versus">vs</p>
+	<section id="splash">
+		<p>druk op beide knoppen om te starten</p>
+		<img src="images/buttons.png" alt="" />
+		<p>&copy;2014 devine</p>
+	</section>
 
+	<section id="choices" class="clearfix">
+		<div class="player1">
+		    <img class="robot spud" src="images/robots/spud.png" />
+		    <img class="robot crank" src="images/robots/crank.png" />
+		    <img class="robot crowby" src="images/robots/crowby.png" />
+			<img class="indicatorstep1" src="images/indicator.png" alt ="" />
+			<img class="indicatorstep2" src="images/indicator.png" alt ="" />
+			<img class="choices" src="images/choices.png" alt=""/>
+		</div>
+
+		<div class="player2">
+			<img class="robot spud" src="images/robots/spud.png" />
+		    <img class="robot crank" src="images/robots/crank.png" />
+		    <img class="robot crowby" src="images/robots/crowby.png" />
+			<img class="indicatorstep1" src="images/indicator.png" alt ="" />
+			<img class="indicatorstep2" src="images/indicator.png" alt ="" />
+			<img class="choices" src="images/choices.png" alt=""/>
+	</section>
+
+	<section id="choosebody" class="clearfix">
+	<p class="wait">even wachten</p>
+		<div class="player1">
+			<img class="selection" src="images/selection.png" alt="" />
+			<img src="images/bodys.png" alt=""/>
+			<header>
+				<h1>vomitator</h1>
+			</header>
+			<ul>
+				<li>Snelheid <br /> <div class="snelheid"></div></li>
+				<li>Sterkte <br /> <div class="sterkte"></div></li>
+			</ul>
+		</div>
+
+		<div class="player2">
+			<img class="selection" src="images/selection.png" alt=""/>
+			<img src="images/bodys.png" alt=""/>
+			<header>
+				<h1>vomitator</h1>
+			</header>
+			<ul>
+				<li>Snelheid <br /> <div class="snelheid"></div></li>
+				<li>Sterkte <br /> <div class="sterkte"></div></li>
+			</ul>
+		</div>
+	</section>
+
+	<section id="chooselongdistanceweapon" class="clearfix">
+	<p class="wait">even wachten</p>
+		<div class="player1">
+			<img class="selection" src="images/selection.png" alt="" />
+			<img src="images/weapons.png" alt=""/>
+			<header>
+				<h1>vomitator</h1>
+			</header>
+			<ul>
+				<li>Herlaadsnelheid <br /> <div class="herlaadsnelheid"></div></li>
+				<li>Kracht <br /> <div class="kracht"></div></li>
+			</ul>
+		</div>
+
+		<div class="player2">
+			<img class="selection" src="images/selection.png" alt=""/>
+			<img src="images/weapons.png" alt=""/>
+			<header>
+				<h1>vomitator</h1>
+			</header>
+			<ul>
+				<li>Herlaadsnelheid <br /> <div class="herlaadsnelheid"></div></li>
+				<li>Kracht <br /> <div class="kracht"></div></li>
+			</ul>
+		</div>
+	</section>
+
+	<section id="game">
+		<img id="logo" src="images/logo.png" alt="" />
+		<canvas id="cnvs" width="1350" height="890">&nbsp;</canvas>
+	</section>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/vendor.js"></script>
+<script src="js/bitmaptextfield.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

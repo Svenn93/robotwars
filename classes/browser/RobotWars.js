@@ -6,6 +6,8 @@ var Bound = require('./Bound.js');
 var Player = require('./Player.js');
 var CollisionDetection = require('./CollisionDetection.js');
 var Bullet = require('./Bullet.js');
+var Healthbar = require('./Healthbar.js');
+var TimeIndicator = require('./TimeIndicator.js');
 
 var keys = [];
 var joyStick1 = {};
@@ -42,20 +44,6 @@ module.exports = (function(){
             shape1.graphics.drawCircle(200,200,200);
 
 			this.stage.addChild(this.world.container);
-			
-			document.fullscreenEnabled = document.fullscreenEnabled || 
-			 							 document.webkitFullscreenEnabled || 
-			 							 document.mozFullScreenEnabled ||
-			 							 document.msFullscreenEnabled;
-
-			document.body.requestFullscreen = this.$el[0].requestFullscreen || 
-										 this.$el[0].webkitRequestFullscreen || 
-										 this.$el[0].mozRequestFullscreen || 
-										 this.$el[0].msRequestFullscreen;
-
-			this.$el.on('click', function(e){
-				document.body.requestFullscreen();
-			});
 
 			window.onkeydown = (this.keydown).bind(this);
 			window.onkeyup = (this.keyup).bind(this);
@@ -116,11 +104,24 @@ module.exports = (function(){
 			this.world.container.addChild(this.player1.displayobject);
 
 			this.player2 = new Player(this.spawnX2, this.spawnY2, this.world.friction);
+			this.player2.event.observe('playerHit', (this.player2HitPlayer).bind(this));
 			this.world.container.addChild(this.player2.displayobject);
+
+			this.healthbar1 = new Healthbar(0, 700, "links", "player 1");
+			this.world.container.addChild(this.healthbar1.displayobject);
+
+			this.healthbar2 = new Healthbar(950, 700, "rechts", "player 2");
+			this.world.container.addChild(this.healthbar2.displayobject);
+
+			this.timeindicator = new TimeIndicator(575, 700);
+			this.world.container.addChild(this.timeindicator.displayobject);
 
 			this.ticker = createjs.Ticker;
 			this.ticker.setFPS('60');
-			this.ticker.addEventListener('tick', this.update.bind(this));
+			this.fn = this.update.bind(this);
+			this.ticker.addEventListener('tick', this.fn);
+
+			this.interval = setInterval((this.countdown).bind(this), 1000);
 		},
 
 		attack: function(player) {
@@ -144,6 +145,12 @@ module.exports = (function(){
 					this.player2.speed = 0;
 				}
 			}
+
+			if(this.collisionDetection.checkPlayerCollision(this.player1, this.player2)){
+				this.player1.speed = 0;
+				this.player2.speed = 0;
+			}
+
 			//PLAYER 1
 
 			if(keys[37] || joyStick1["left"]){
@@ -191,13 +198,17 @@ module.exports = (function(){
 				}
 			}
 
-
 			for(var j = 0; j < this.player1.bullets.length; j++) {
 					this.player1.bullets[j].update(this.collisionboxes, this.player2);
 			}
 
+			for(var k = 0; k < this.player2.bullets.length; k++) {
+					this.player2.bullets[k].update(this.collisionboxes, this.player1);
+			}
+
 			this.player1.update();
 			this.player2.update();
+			this.timeindicator.update();
 			this.stage.update();
 		},
 
@@ -213,18 +224,44 @@ module.exports = (function(){
 				//debug
 				this.player1.attack("bullet");
 			}
+
+			if(event.keyCode == 16) {
+				this.player2.attack("bullet");
+			}
 			keys[event.keyCode] = false;
 		},
 
 		keydown: function(event) {
-			console.log(event.keyCode);
+			//console.log(event.keyCode);
 			keys[event.keyCode] = true;
 		},
 
 		player1HitPlayer: function() {
-			console.log('[RobotWars] player1 hit other player', this.player2);
 			this.player2.health -= 1;
+			this.healthbar2.health = this.player2.health;
+			this.healthbar2.loadGraphics();
 			console.log(this.player2.health);
+		},
+
+		player2HitPlayer: function() {
+			this.player1.health -= 1;
+			this.healthbar1.health = this.player1.health;
+			this.healthbar1.loadGraphics();
+			console.log(this.player1.health);
+		},
+
+		countdown: function() {
+			if(this.timeindicator.seconds > 0) {
+				this.timeindicator.seconds -=1; 
+			}else {
+				clearInterval(this.interval);
+				this.endGame();
+			}
+		},
+
+		endGame: function() {
+			console.log('END GAME');
+			this.ticker.removeEventListener('tick', this.fn);
 		},
 	});
 

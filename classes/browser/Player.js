@@ -30,17 +30,9 @@ module.exports = (function(){
 			//spritesheet van de speler inladen
 			var rect = new createjs.Shape();
 			rect.graphics.beginFill("orange").drawRect(0, 0, 80, 80);
-			//this.displayobject.addChild(rect);
-
-			/*this.displayobject.width = this.width = 30;
-			this.displayobject.height = this.height = 30;
-			this.displayobject.rotation = this.rotation;*/
 
 			this.displayobject.regX = 0;
 			this.displayobject.regY = 0;
-
-			/*console.log("this: ", this);
-			console.log("Bounds: ", this.displayobject.getBounds());*/
 
 			var spritesheet = new createjs.SpriteSheet({
 				"images":["../images/robot.png"],
@@ -68,15 +60,10 @@ module.exports = (function(){
 
 		update: function() {
 
-			//wanneer de x-waarde wordt aangepast in een collision, displayobject x gelijkzetten
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
 			this.speed *= this.friction;
-			if(this.speed < 0.1)
-			{
-				this.speed = 0;
-			}
 
 			if(this.rotation <= 0 && this.rotation >= -2)
 			{
@@ -93,11 +80,7 @@ module.exports = (function(){
 			accelerationVector["x"] = directionVector["x"] * this.speed;
 			accelerationVector["y"] = directionVector["y"] * this.speed;
 
-			//console.log("speed: ", this.speed, "accVector x: ", accelerationVector["x"], "accVector y: ", accelerationVector["y"]);
-
 			this.playerSprite.rotation = this.rotation;
-
-			//console.log("heading: ", this.rotation, " and rotation: ", this.displayobject.rotation);
 
 			this.displayobject.x += accelerationVector["x"];
 			this.displayobject.y += accelerationVector["y"];
