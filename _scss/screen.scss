@@ -13,6 +13,15 @@ canvas{
 	margin-bottom: 15px;
 }
 
+#reader {
+	display: none;
+}
+
+#manual {
+	margin-top: 70px;
+	margin-bottom: 70px;
+}
+
 .logo-groot {
 	margin-top: 100px;
 	transition: margin-top 1s, transform 1s;
@@ -158,8 +167,17 @@ canvas{
 			left: 165px;
 		}
 
+		.indicatorstep2 {
+			top:65px; 
+			left: 95px;
+		}
+
 		.robot {
 			left: 168px;
+		}
+
+		.weapon {
+			left: 97px;
 		}
 	}
 
@@ -177,7 +195,7 @@ canvas{
 		}
 
 		.indicatorstep2 {
-			left: 
+			top:70px; 
 		}
 
 		.robot {
@@ -207,6 +225,15 @@ canvas{
 		.robot {
 			position: absolute;
 			top: 2px;
+			width: 96px;
+			height: 96px;
+			display: none;
+		}
+
+		.weapon {
+			position: absolute;
+			display: none;
+			top: 69px;
 			width: 96px;
 			height: 96px;
 			display: none;
@@ -255,5 +282,5 @@ body{
 
 @keyframes fade {
 0%   {opacity:0;}
-50%   {opacity:0.3;}
+50%   {opacity:0.35;}
 100% {opacity:0;}}

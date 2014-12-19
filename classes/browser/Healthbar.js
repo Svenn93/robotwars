@@ -4,12 +4,12 @@ var Class = require('../core/Class.js');
 module.exports = (function(){
 
 	var Healthbar = Class.extend({
-		init: function(x, y, plaatsing, text) {
+		init: function(x, y, plaatsing, text, health) {
 			this.x = x;
 			this.y = y;
-			this.health = 100;
+			this.health = health;
 			this.plaatsing = plaatsing;
-			this.text = new createjs.Text(text, "20px Arial", "white");
+			this.text = new createjs.Text(text, "18px Press Start K", "white");
 
 			this.displayobject = new createjs.Container();
 			this.displayobject.addChild(this.text);

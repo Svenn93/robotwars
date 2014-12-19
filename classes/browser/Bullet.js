@@ -5,13 +5,13 @@ var Eventmanager = require('./Eventmanager.js');
 module.exports = (function(){
 	
 	var Bullet = Class.extend({
-		init: function(x, y, rotation){
+		init: function(x, y, rotation, type, snelheid){
 			this.collisionDetection = new CollisionDetection();
 			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
 			this.rotation = rotation;
-			this.speed = 5;
+			this.speed = snelheid;
 			this.displayobject = new createjs.Container();
 			this.width = 5;
 			this.height = 5;
@@ -21,8 +21,25 @@ module.exports = (function(){
 			this.displayobject.y = y;
 			this.displayobject.width = this.width;
 			this.displayobject.height = this.height;
+
 			var bullet = new createjs.Shape();
-			bullet.graphics.beginFill("red").drawRect(0, 0, 5, 5);
+
+			if(type == "s-34")
+			{
+				bullet.graphics.beginFill("red").drawRect(0, 0, 5, 5);
+			}
+
+			if(type == "kg-43")
+			{
+				bullet.graphics.beginFill("#CC6600").drawRect(0, 0, 6, 2);
+				bullet.rotation = rotation;
+			}
+
+			if(type == "kx-93")
+			{
+				bullet.graphics.beginFill("brown").drawRect(0, 0, 9, 2);
+				bullet.rotation = rotation;
+			}
 			this.displayobject.addChild(bullet);
 		},
 

@@ -6,24 +6,39 @@ var Eventmanager = require('./EventManager.js');
 module.exports = (function(){
 
 	var Player = Class.extend({
-		init: function(x, y, friction) {
+		init: function(x, y, friction, type, speed, strength) {
 			this.event = new Eventmanager(this);
 			this.x = x;
 			this.y = y;
 			this.friction = friction;
 			this.speed = 0;
+			this.maxspeed = speed;
 			this.rotation = 0;
 			this.velX = 0;
 			this.velY = 0;
 			this.bullets = [];
-			this.health = 100;
+			this.health = 20 * strength;
+			this.shieldUsed = false;
+			this.shield = false;
+
+			this.spritesheeturl = "../images/sprites/";
 
 			this.displayobject = new createjs.Container();
 
 			this.displayobject.x = this.x;
 			this.displayobject.y = this.y;
 
+			this.spritesheeturl += type + ".png";
+			
+			if(type === "spud") {
+				this.framewidth = 85;
+			}else{
+				this.framewidth = 83;
+			}
+
+			console.log('TYPE ROBOT: ', this.spritesheeturl);
 			this.loadGraphics();
+
 		},
 
 		loadGraphics: function() {
@@ -35,15 +50,17 @@ module.exports = (function(){
 			this.displayobject.regY = 0;
 
 			var spritesheet = new createjs.SpriteSheet({
-				"images":["../images/robot.png"],
-				"frames": {"width": 83, "height": 81, "count":8, "regX": 41.5, "regY": 40.5},
+				"images":[this.spritesheeturl],
+				"frames": {"width": this.framewidth, "height": 81, "count":5, "regX": 41.5, "regY": 40.5},
 				"animations": {
 					drive: {
-						frames:[0, 1, 2, 3],
+						frames:[2, 3, 4, 2],
 						speed: 0.1
 					},
-					idle: {
-						frames: [3]
+					hit: {
+						frames: [0,1],
+						next: "drive",
+						speed: 0.1
 					}
 				}
 			});
@@ -55,7 +72,6 @@ module.exports = (function(){
 			this.displayobject.width = this.width = 80;
 			this.displayobject.height = this.height = 80;
 
-			console.log("Sprite: ", this.playerSprite);
 		},
 
 		update: function() {
@@ -89,10 +105,9 @@ module.exports = (function(){
 			this.y = this.displayobject.y;
 		},
 
-		attack: function(type) {
-			switch(type){
-				case 'bullet':
-				var bullet = new Bullet(this.x + 40, this.y + 40, this.rotation);
+		attack: function(type, snelheid, kracht) {
+				this.bulletdamage = kracht;
+				var bullet = new Bullet(this.x + 40, this.y + 40, this.rotation, type, snelheid, kracht);
 				var world = this.displayobject.parent;
 				bullet.index = (this.bullets.length > 0) ? this.bullets.length : 0;
 				this.bullets.push(bullet);
@@ -111,8 +126,6 @@ module.exports = (function(){
 				bullet.event.observe('otherPlayerHit', callback2);
 
 				world.addChildAt(bullet.displayobject, world.getChildIndex(this.displayobject));
-				break;
-			}
 		},
 
 		bulletHitBound: function(bullet) {
@@ -132,6 +145,24 @@ module.exports = (function(){
 			this.bullets.splice(this.bullets.indexOf(bullet), 1);
 
 			this.event.fire('playerHit');
+		},
+
+		useShield: function() {
+			if(!(this.shieldUsed))
+			{
+				this.shieldUsed = true;
+				this.shield = true;
+				this.shieldbitmap = new createjs.Bitmap("../images/sprites/shield.png");
+				this.shieldbitmap.regX = 110;
+				this.shieldbitmap.regY = 110;
+				this.shieldbitmap.x =  41.5;
+				this.shieldbitmap.y = 40.5;
+				this.displayobject.addChild(this.shieldbitmap);
+				setTimeout((function(){
+					this.shield=false;
+					this.displayobject.removeChild(this.shieldbitmap);
+				}).bind(this), 10000);
+			}
 		},
 	});
 
